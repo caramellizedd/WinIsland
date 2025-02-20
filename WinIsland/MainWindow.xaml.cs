@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -15,6 +16,10 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Windows.Storage.Streams;
+using WindowsMediaController;
+using static WindowsMediaController.MediaManager;
+using Grid = System.Windows.Controls.Grid;
 
 namespace WinIsland
 {
@@ -35,11 +40,56 @@ namespace WinIsland
         private DispatcherTimer tick;
         double animDurationGlobal = 0.2D;
         string lastTitleText = "";
+
+        private static readonly MediaManager mediaManager = new MediaManager();
+        private static MediaSession? currentSession = null;
+
         public MainWindow()
         {
             InitializeComponent();
             StartMouseTracking();
+            mediaManager.OnAnySessionOpened += MediaManager_OnAnySessionOpened;
+            mediaManager.OnAnySessionClosed += MediaManager_OnAnySessionClosed;
+            mediaManager.OnFocusedSessionChanged += MediaManager_OnFocusedSessionChanged;
+            mediaManager.OnAnyMediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
+
+            mediaManager.Start();
         }
+
+        private void MediaManager_OnAnyMediaPropertyChanged(MediaSession mediaSession, Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties mediaProperties)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                var songInfo = mediaSession.ControlSession.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
+                if (songInfo == null) return;
+                songTitle.Content = songInfo.Title;
+                songArtist.Content = songInfo.Artist;
+                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                songThumbnailBG.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+            });
+        }
+
+        private void MediaManager_OnFocusedSessionChanged(MediaSession mediaSession)
+        {
+            
+        }
+
+        private void MediaManager_OnAnySessionClosed(MediaSession mediaSession)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                currentSession = null;
+            });
+        }
+
+        private void MediaManager_OnAnySessionOpened(MediaSession mediaSession)
+        {
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                currentSession = mediaSession;
+            });
+        }
+
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
@@ -66,6 +116,7 @@ namespace WinIsland
 
         private void Window_MouseEnter()
         {
+            gridBG.Visibility = Visibility.Collapsed;
             double currentY = -40.0D;
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, null);
             WindowTransform.Y = currentY;
@@ -114,7 +165,7 @@ namespace WinIsland
             DoubleAnimation moveUpAnimation = new DoubleAnimation
             {
                 From = currentY,
-                To = -40,
+                To = -50,
                 Duration = TimeSpan.FromSeconds(animDurationGlobal),
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
@@ -259,6 +310,7 @@ namespace WinIsland
             }
             if (isExpanded)
             {
+                gridBG.Visibility = Visibility.Collapsed;
                 ignoreMouseEvent = false;
                 AnimateWindowSize(451, 51, (int)firstPos);
                 isExpanded = false;
@@ -269,7 +321,8 @@ namespace WinIsland
             Topmost = false;
             Topmost = true;
             ignoreMouseEvent = true;
-            AnimateWindowSize(902, 250, (int)firstPos - 225);
+            gridBG.Visibility = Visibility.Visible;
+            AnimateWindowSize(852, 350, (int)firstPos - 200);
             //Height = 250;
             //Width = 902;
         }
@@ -316,7 +369,7 @@ namespace WinIsland
             while (stopwatch.ElapsedMilliseconds < duration)
             {
                 double t = (double)stopwatch.ElapsedMilliseconds / duration;
-                double easeT = EaseOutCubic(t); // Apply easing function
+                double easeT = EaseInOutCubic(t); // Apply easing function
 
                 int newWidth = (int)(startWidth + (width - startWidth) * easeT);
                 int newHeight = (int)(startHeight + (height - startHeight) * easeT);
@@ -328,7 +381,7 @@ namespace WinIsland
             be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
             mainContent.BeginAnimation(Grid.OpacityProperty, opacity2);
         }
-        private double EaseOutCubic(double t)
+        private double EaseInOutCubic(double t)
         {
             t = Math.Clamp(t, 0, 1); // Ensure t is within 0 and 1
             return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
@@ -337,6 +390,48 @@ namespace WinIsland
         private void Frame_Navigated(object sender, NavigationEventArgs e)
         {
 
+        }
+    }
+    internal static class Helper
+    {
+        internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)
+        {
+            if (Thumbnail == null)
+                return null;
+
+            var thumbnailStream = Thumbnail.OpenReadAsync().GetAwaiter().GetResult();
+            byte[] thumbnailBytes = new byte[thumbnailStream.Size];
+            using (DataReader reader = new DataReader(thumbnailStream))
+            {
+                reader.LoadAsync((uint)thumbnailStream.Size).GetAwaiter().GetResult();
+                reader.ReadBytes(thumbnailBytes);
+            }
+
+            byte[] imageBytes = thumbnailBytes;
+
+            if (convertToPng)
+            {
+                using var fileMemoryStream = new System.IO.MemoryStream(thumbnailBytes);
+                Bitmap thumbnailBitmap = (Bitmap)Bitmap.FromStream(fileMemoryStream);
+
+                if (!thumbnailBitmap.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png))
+                {
+                    using var pngMemoryStream = new System.IO.MemoryStream();
+                    thumbnailBitmap.Save(pngMemoryStream, System.Drawing.Imaging.ImageFormat.Png);
+                    imageBytes = pngMemoryStream.ToArray();
+                }
+            }
+
+            var image = new BitmapImage();
+            using (var ms = new System.IO.MemoryStream(imageBytes))
+            {
+                image.BeginInit();
+                image.CacheOption = BitmapCacheOption.OnLoad;
+                image.StreamSource = ms;
+                image.EndInit();
+            }
+
+            return image;
         }
     }
 }

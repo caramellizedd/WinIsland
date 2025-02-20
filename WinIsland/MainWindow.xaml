@@ -13,7 +13,7 @@
         ResizeMode="NoResize"
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
-        Title="MainWindow" Height="51" Width="451">
+        Title="WinIslandOwO234" Height="51" Width="451">
     <Border MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
         <Border.RenderTransform>
             <TranslateTransform x:Name="WindowTransform" />
@@ -24,10 +24,9 @@
         <Grid x:Name="mainContent">
             <!--Clock-->
             <Label x:Name="clock" Margin="10,0,0,0" Content="43:33 PM" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
-            <!--Window title and icons-->
-            <Label x:Name="windowTitle" Content="OwO" HorizontalAlignment="Center" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
             <!--Battery-->
             <Label x:Name="battery" Margin="0,0,10,0" HorizontalAlignment="Right" Content="&#xE83F;" Foreground="White" FontSize="26" FontFamily="Segoe Fluent Icons"/>
+            <Frame NavigationUIVisibility="Hidden" Margin="10,35,10,10" Navigated="Frame_Navigated" Background="Red"/>
         </Grid>
     </Border>
 </Window>

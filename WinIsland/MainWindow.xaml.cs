@@ -1,4 +1,6 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -23,6 +25,16 @@ namespace WinIsland
     {
         double firstPos = 0;
         bool firstLaunch = false;
+        bool showing = false;
+        bool isInTargetArea = false;
+        bool isAnimating = false;
+        bool ignoreMouseEvent = false;
+        bool isExpanded = false;
+        bool expandAnimFinished = false;
+        private DispatcherTimer mouseCheckTimer;
+        private DispatcherTimer tick;
+        double animDurationGlobal = 0.2D;
+        string lastTitleText = "";
         public MainWindow()
         {
             InitializeComponent();
@@ -31,12 +43,27 @@ namespace WinIsland
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            tick = new DispatcherTimer();
+            tick.Start();
+            tick.Tick += Tick_Tick;
+            EnableDwmTransitions();
             firstPos = Left;
             //MakeWindowClickThrough(false);
             Topmost = true;
             Top = 0;
+            ShowInTaskbar = false;
             mainContent.Effect = be;
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+            SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
+            Window_MouseLeave();
         }
+
+        private void Tick_Tick(object? sender, EventArgs e)
+        {
+            clock.Content = DateTime.Now.ToString("hh:mm tt");
+        }
+
         private void Window_MouseEnter()
         {
             double currentY = -40.0D;
@@ -47,14 +74,20 @@ namespace WinIsland
             {
                 From = currentY,
                 To = 0,
-                Duration = TimeSpan.FromSeconds(0.2),
+                Duration = TimeSpan.FromSeconds(animDurationGlobal),
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
             DoubleAnimation blurAnim = new DoubleAnimation
             {
                 From = 20,
                 To = 0,
-                Duration = TimeSpan.FromSeconds(0.2)
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+            };
+            DoubleAnimation generic = new DoubleAnimation
+            {
+                From = 0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
             moveUpAnimation.CurrentTimeInvalidated += (sender, e) =>
             {
@@ -68,8 +101,9 @@ namespace WinIsland
             // Apply animation to the TranslateTransform
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, moveUpAnimation);
             be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim);
+            mainContent.BeginAnimation(Grid.OpacityProperty, generic);
         }
-        bool isAnimating = false;
+        
         private void Window_MouseLeave()
         {
             double currentY = 0.0D;
@@ -81,14 +115,20 @@ namespace WinIsland
             {
                 From = currentY,
                 To = -40,
-                Duration = TimeSpan.FromSeconds(0.2),
+                Duration = TimeSpan.FromSeconds(animDurationGlobal),
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
             DoubleAnimation blurAnim = new DoubleAnimation
             {
                 From = 0,
                 To = 20,
-                Duration = TimeSpan.FromSeconds(0.2)
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+            };
+            DoubleAnimation generic = new DoubleAnimation
+            {
+                From = 1,
+                To = 0,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
             moveUpAnimation.CurrentTimeInvalidated += (sender, e) =>
             {
@@ -103,9 +143,9 @@ namespace WinIsland
             // Apply animation to the TranslateTransform
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, moveUpAnimation);
             be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim);
+            mainContent.BeginAnimation(Grid.OpacityProperty, generic);
         }
-        bool isInTargetArea = false;
-        private DispatcherTimer mouseCheckTimer;
+        
         private void StartMouseTracking()
         {
             mouseCheckTimer = new DispatcherTimer();
@@ -124,7 +164,7 @@ namespace WinIsland
                 if (!GetWindowRect(hwnd, out windowRect))
                     return;
                 bool inRange = (mousePos.X >= windowRect.Left && mousePos.X <= windowRect.Right) &&
-                          (mousePos.Y >= 0 && mousePos.Y <= 1);
+                          (showing ? (mousePos.Y >= 0 && mousePos.Y <= 41) : (mousePos.Y >= 0 && mousePos.Y <= 1));
 
                 if (inRange && !isInTargetArea)
                 {
@@ -133,6 +173,7 @@ namespace WinIsland
                     if (!inRange) return;
                     isInTargetArea = true;
                     Window_MouseEnter();
+                    showing = true;
                     //MakeWindowClickThrough(true);
                     //StatusText.Text = "Mouse in target area!";
                     //StatusText.Foreground = Brushes.Green;
@@ -141,12 +182,13 @@ namespace WinIsland
                 {
                     isInTargetArea = false;
                     Window_MouseLeave();
+                    showing = false;
                     //StatusText.Text = "Move the mouse!";
                     //StatusText.Foreground = Brushes.Black;
                 }
             }
         }
-        bool ignoreMouseEvent = false;
+        
         #region Mouse Events P/Invoke
         // Windows API: Get mouse position in screen coordinates
         [DllImport("user32.dll")]
@@ -178,6 +220,16 @@ namespace WinIsland
         private const int WS_EX_LAYERED = 0x80000;
         private const int WS_EX_TRANSPARENT = 0x20;
         private const int WS_EX_TOPMOST = 0x00000008;
+        private const int WS_EX_TOOLWINDOW = 0x00000080;
+        private const int SWP_NOZORDER = 0x0004;
+        private const int SWP_NOACTIVATE = 0x0010;
+        private const int DWMWA_TRANSITIONS_FORCEDISABLED = 3;
+
+        [DllImport("dwmapi.dll")]
+        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int     X, int Y, int cx, int cy, uint uFlags);
 
 
         [DllImport("user32.dll")]
@@ -194,9 +246,10 @@ namespace WinIsland
         private void Window_Deactivated(object sender, EventArgs e)
         {
             ignoreMouseEvent = false;
-            Height = 51;
-            Width = 451;
-            this.Left = firstPos;
+            AnimateWindowSize(451, 51, (int)firstPos);
+            isExpanded = false;
+            //Height = 51;
+            //Width = 451;
         }
         private void Border_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -204,13 +257,86 @@ namespace WinIsland
                 firstLaunch = true;
                 return;
             }
+            if (isExpanded)
+            {
+                ignoreMouseEvent = false;
+                AnimateWindowSize(451, 51, (int)firstPos);
+                isExpanded = false;
+                return;
+            }
             if (ignoreMouseEvent) return;
+            isExpanded = true;
             Topmost = false;
             Topmost = true;
             ignoreMouseEvent = true;
-            Height = 250;
-            Width = 902;
-            this.Left = firstPos - 225.5;
+            AnimateWindowSize(902, 250, (int)firstPos - 225);
+            //Height = 250;
+            //Width = 902;
+        }
+        private void EnableDwmTransitions()
+        {
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            int enableTransition = 1; // Enable animations
+
+            // Apply the transition effect
+            DwmSetWindowAttribute(hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, ref enableTransition, sizeof(int));
+        }
+        private async void AnimateWindowSize(int width, int height, int left)
+        {
+            DoubleAnimation opacity = new DoubleAnimation
+            {
+                From = 1,
+                To = 0.0,
+                Duration = TimeSpan.FromSeconds(0)
+            };
+            DoubleAnimation opacity2 = new DoubleAnimation
+            {
+                From = 0.0,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+            };
+            DoubleAnimation blurAnim2 = new DoubleAnimation
+            {
+                From = 10,
+                To = 0,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+            };
+            IntPtr hwnd = new WindowInteropHelper(this).Handle;
+            
+            var stopwatch = Stopwatch.StartNew();
+
+            int duration = (int)(animDurationGlobal * 1000);
+            int startWidth = (int)this.Width;
+            int startHeight = (int)this.Height;
+            int startLeft = (int)this.Left;
+            int delay = 0; // Delay between steps (ms)
+
+            mainContent.BeginAnimation(Grid.OpacityProperty, opacity);
+
+            while (stopwatch.ElapsedMilliseconds < duration)
+            {
+                double t = (double)stopwatch.ElapsedMilliseconds / duration;
+                double easeT = EaseOutCubic(t); // Apply easing function
+
+                int newWidth = (int)(startWidth + (width - startWidth) * easeT);
+                int newHeight = (int)(startHeight + (height - startHeight) * easeT);
+                int newLeft = (int)(startLeft + (left - startLeft) * easeT);
+
+                SetWindowPos(hwnd, IntPtr.Zero, newLeft, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+                await Task.Delay(delay);
+            }
+            be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
+            mainContent.BeginAnimation(Grid.OpacityProperty, opacity2);
+        }
+        private double EaseOutCubic(double t)
+        {
+            t = Math.Clamp(t, 0, 1); // Ensure t is within 0 and 1
+            return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
+        }
+
+        private void Frame_Navigated(object sender, NavigationEventArgs e)
+        {
+
         }
     }
 }

@@ -13,7 +13,7 @@
         ResizeMode="NoResize"
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
-        Title="WinIslandOwO234" Height="51" Width="451">
+        Title="WinIslandOwO234" Height="51" Width="341">
     <Border MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
         <Border.RenderTransform>
             <TranslateTransform x:Name="WindowTransform" />
@@ -26,26 +26,20 @@
                 <VisualBrush Visual="{Binding ElementName=mainWindowB}" />
             </Grid.OpacityMask>
             <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="0,0,10,10"/>
-            <Grid ClipToBounds="True" x:Name="gridBG">
-                <Grid.Effect>
-                    <BlurEffect Radius="50" RenderingBias="Performance"/>
-                </Grid.Effect>
-                <Grid Margin="-120,-120,0,-120">
-                    <Image x:Name="songThumbnailBG" HorizontalAlignment="Left" Stretch="Uniform" Opacity="0.1"/>
-                </Grid>
-            </Grid>
+            <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.4"/>
+            <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.4"/>
             <!--Clock-->
             <Label x:Name="clock" Margin="10,0,0,0" Content="43:33 PM" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
             <!--Battery-->
             <Label x:Name="battery" Margin="0,0,10,0" HorizontalAlignment="Right" Content="&#xE83F;" Foreground="White" FontSize="26" FontFamily="Segoe Fluent Icons"/>
-            <Border Margin="61,70,573,71" BorderBrush="White" BorderThickness="1">
+            <Border x:Name="thumbnailGlow" Margin="61,70,573,71" BorderBrush="#55FFFFFF" BorderThickness="1">
                 <Image x:Name="songThumbnail" Stretch="UniformToFill"/>
             </Border>
             <Label x:Name="songTitle" Content="No song playing" Foreground="White" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
             <Label x:Name="songArtist" Content="Artist" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
-            <Button x:Name="beforeRewind" Margin="394,206,356,59" Content="|=="/>
-            <Button x:Name="playPause" Margin="479,206,271,59" Content="||"/>
-            <Button x:Name="afterForward" Margin="564,206,184,59" Content="==|"/>
+            <Button x:Name="beforeRewind" Click="beforeRewind_Click" Margin="394,206,356,59" Content="&#xE100;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
+            <Button x:Name="playPause" Click="playPause_Click" Margin="479,206,271,59" Content="&#xE102;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
+            <Button x:Name="afterForward" Click="afterForward_Click" Margin="564,206,184,59" Content="&#xE101;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
         </Grid>
     </Border>
 </Window>

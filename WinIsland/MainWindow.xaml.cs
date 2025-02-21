@@ -64,27 +64,28 @@ namespace WinIsland
         bool isPaused = false;
         private void MediaManager_OnAnyPlaybackStateChanged(MediaSession mediaSession, Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackInfo playbackInfo)
         {
-            if (mediaSession.ControlSession.GetPlaybackInfo().Controls.IsPauseEnabled)
+            if (mediaSession.ControlSession.GetPlaybackInfo().PlaybackStatus == Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
             {
                 isPaused = true;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    playPause.Content = "\xE769";
+                    playPause.Content = "\xE102";
                 });
-                
+
             }
             else
             {
                 isPaused = false;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    playPause.Content = "\xE102";
+                    playPause.Content = "\xE769";
                 });
             }
         }
 
         private void MediaManager_OnAnyMediaPropertyChanged(MediaSession mediaSession, Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties mediaProperties)
         {
+            if (currentSession == null) return;
             if (mediaSession.ControlSession.GetPlaybackInfo().Controls.IsPauseEnabled)
             {
                 isPaused = true;
@@ -132,17 +133,19 @@ namespace WinIsland
             Application.Current.Dispatcher.Invoke(() =>
             {
                 currentSession = null;
+                songTitle.Content = "No song playing";
+                songArtist.Content = "WinIsland by Charamellized";
             });
         }
 
         private void MediaManager_OnAnySessionOpened(MediaSession mediaSession)
         {
-            if (mediaSession.ControlSession.GetPlaybackInfo().Controls.IsPauseEnabled)
+            if (mediaSession.ControlSession.GetPlaybackInfo().PlaybackStatus == Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
             {
                 isPaused = true;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    playPause.Content = "\xE769";
+                    playPause.Content = "\xE102";
                 });
 
             }
@@ -151,7 +154,7 @@ namespace WinIsland
                 isPaused = false;
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    playPause.Content = "\xE102";
+                    playPause.Content = "\xE769";
                 });
             }
             Application.Current.Dispatcher.Invoke(() =>
@@ -593,7 +596,7 @@ namespace WinIsland
                 isPaused = false;
                 currentSession.ControlSession.TryPlayAsync();
             }
-            else
+            else if(!isPaused)
             {
                 isPaused = true;
                 currentSession.ControlSession.TryPauseAsync();

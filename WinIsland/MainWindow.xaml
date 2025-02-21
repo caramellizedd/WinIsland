@@ -14,6 +14,7 @@
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
         Title="WinIslandOwO234" Height="51" Width="341">
+
     <Border MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
         <Border.RenderTransform>
             <TranslateTransform x:Name="WindowTransform" />
@@ -26,20 +27,85 @@
                 <VisualBrush Visual="{Binding ElementName=mainWindowB}" />
             </Grid.OpacityMask>
             <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="0,0,10,10"/>
-            <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.4"/>
-            <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.4"/>
+            <Grid>
+                <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.4"/>
+                <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.4"/>
+            </Grid>
             <!--Clock-->
-            <Label x:Name="clock" Margin="10,0,0,0" Content="43:33 PM" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
+            <Label x:Name="clock" Margin="10,0,0,0" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
             <!--Battery-->
             <Label x:Name="battery" Margin="0,0,10,0" HorizontalAlignment="Right" Content="&#xE83F;" Foreground="White" FontSize="26" FontFamily="Segoe Fluent Icons"/>
             <Border x:Name="thumbnailGlow" Margin="61,70,573,71" BorderBrush="#55FFFFFF" BorderThickness="1">
                 <Image x:Name="songThumbnail" Stretch="UniformToFill"/>
             </Border>
             <Label x:Name="songTitle" Content="No song playing" Foreground="White" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
-            <Label x:Name="songArtist" Content="Artist" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
-            <Button x:Name="beforeRewind" Click="beforeRewind_Click" Margin="394,206,356,59" Content="&#xE100;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
-            <Button x:Name="playPause" Click="playPause_Click" Margin="479,206,271,59" Content="&#xE102;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
-            <Button x:Name="afterForward" Click="afterForward_Click" Margin="564,206,184,59" Content="&#xE101;" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Background="Transparent" Foreground="White" FontWeight="Bold"/>
+            <Label x:Name="songArtist" Content="WinIsland by Charamellized" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
+            <StackPanel Margin="394,216,266,0" Orientation="Horizontal">
+                <StackPanel.Resources>
+                    <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
+                        <Setter Property="Background" Value="Transparent"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="{x:Type Button}">
+                                    <Border RenderTransformOrigin="0.5,0.5" x:Name="ButtonGrid" Background="{TemplateBinding Background}" CornerRadius="5">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                        <Border.RenderTransform>
+                                            <ScaleTransform/>
+                                        </Border.RenderTransform>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsPressed" Value="True">
+                                            <Trigger.EnterActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="ButtonGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)" To="0.85">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <BounceEase EasingMode="EaseInOut"/>
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                        <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="ButtonGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)" To="0.85">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <CubicEase EasingMode="EaseInOut"/>
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.EnterActions>
+                                            <Trigger.ExitActions>
+                                                <BeginStoryboard>
+                                                    <Storyboard>
+                                                        <DoubleAnimation Duration="0:0:0.05" Storyboard.TargetName="ButtonGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleX)" To="1">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <CubicEase EasingMode="EaseInOut"/>
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                        <DoubleAnimation Duration="0:0:0.05" Storyboard.TargetName="ButtonGrid" Storyboard.TargetProperty="(RenderTransform).(ScaleTransform.ScaleY)" To="1">
+                                                            <DoubleAnimation.EasingFunction>
+                                                                <CubicEase EasingMode="EaseInOut"/>
+                                                            </DoubleAnimation.EasingFunction>
+                                                        </DoubleAnimation>
+                                                    </Storyboard>
+                                                </BeginStoryboard>
+                                            </Trigger.ExitActions>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#33FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#22FFFFFF"/>
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </StackPanel.Resources>
+                <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
+                <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
+                <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
+            </StackPanel>
         </Grid>
     </Border>
 </Window>

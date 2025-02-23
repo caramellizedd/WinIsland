@@ -15,7 +15,7 @@
         Deactivated="Window_Deactivated"
         Title="WinIslandOwO234" Height="51" Width="341">
 
-    <Border MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
+    <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
         <Border.RenderTransform>
             <TranslateTransform x:Name="WindowTransform" />
         </Border.RenderTransform>
@@ -28,8 +28,13 @@
             </Grid.OpacityMask>
             <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="0,0,10,10"/>
             <Grid>
-                <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.4"/>
-                <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.4"/>
+                <Image ClipToBounds="True" x:Name="bg" Opacity="0.2" Stretch="UniformToFill">
+                    <Image.Effect>
+                        <BlurEffect Radius="20" RenderingBias="Performance" KernelType="Box"/>
+                    </Image.Effect>
+                </Image>
+                <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.6"/>
+                <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.6"/>
             </Grid>
             <!--Clock-->
             <Label x:Name="clock" Margin="10,0,0,0" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
@@ -99,12 +104,18 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="#22FFFFFF"/>
                             </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="Gray"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="True">
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
                         </Style.Triggers>
                     </Style>
                 </StackPanel.Resources>
-                <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
-                <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
-                <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" Foreground="White" FontWeight="Bold"/>
+                <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+                <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+                <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
             </StackPanel>
         </Grid>
     </Border>

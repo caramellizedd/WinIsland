@@ -2,6 +2,7 @@
 using System.Diagnostics.Eventing.Reader;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows;
@@ -17,9 +18,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Windows.Media.Control;
 using Windows.Storage.Streams;
-using WindowsMediaController;
-using static WindowsMediaController.MediaManager;
 using Application = System.Windows.Application;
 using Color = System.Windows.Media.Color;
 using Grid = System.Windows.Controls.Grid;
@@ -43,124 +43,172 @@ namespace WinIsland
         bool expandAnimFinished = false;
         private DispatcherTimer mouseCheckTimer;
         private DispatcherTimer tick;
+        private DispatcherTimer waitForMedia;
         double animDurationGlobal = 0.2D;
         string lastTitleText = "";
-
-        private static readonly MediaManager mediaManager = new MediaManager();
-        private static MediaSession? currentSession = null;
+        bool mediaSessionIsNull = false;
+        private GlobalSystemMediaTransportControlsSessionManager? sessionManager;
+        private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties;
+        // Toggleable Settings - PLEASE move this to a settings class. (note to self)
+        public bool blurEverywhere = true;
 
         public MainWindow()
         {
             InitializeComponent();
             StartMouseTracking();
-            mediaManager.OnAnySessionOpened += MediaManager_OnAnySessionOpened;
-            mediaManager.OnAnySessionClosed += MediaManager_OnAnySessionClosed;
-            mediaManager.OnFocusedSessionChanged += MediaManager_OnFocusedSessionChanged;
-            mediaManager.OnAnyMediaPropertyChanged += MediaManager_OnAnyMediaPropertyChanged;
-            mediaManager.OnAnyPlaybackStateChanged += MediaManager_OnAnyPlaybackStateChanged;
-
-            mediaManager.Start();
-        }
-        bool isPaused = false;
-        private void MediaManager_OnAnyPlaybackStateChanged(MediaSession mediaSession, Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackInfo playbackInfo)
-        {
-            if (mediaSession.ControlSession.GetPlaybackInfo().PlaybackStatus == Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
-            {
-                isPaused = true;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE102";
-                });
-
-            }
-            else
-            {
-                isPaused = false;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE769";
-                });
-            }
+            getMediaSession();
+            toggleMediaControls(false);
         }
 
-        private void MediaManager_OnAnyMediaPropertyChanged(MediaSession mediaSession, Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties mediaProperties)
+        private async void getMediaSession()
         {
-            if (currentSession == null) return;
-            if (mediaSession.ControlSession.GetPlaybackInfo().Controls.IsPauseEnabled)
-            {
-                isPaused = true;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE769";
+            sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+            if (sessionManager == null) {
+                mediaSessionIsNull = true;
+                waitForMedia.Interval = new TimeSpan(0,0,1);
+                waitForMedia.Tick += new EventHandler(async delegate (Object o, EventArgs a){
+                    Console.WriteLine("MediaSession is null!\nAttempting to look for one...");
+                    if(mediaSessionIsNull != null)
+                    {
+                        waitForMedia.Stop();
+                        return;
+                    }
+                    sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
+                    if (sessionManager == null) return;
+                    sessionManager.SessionsChanged += SessionManager_SessionsChanged;
+                    sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
+                    sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
+                    sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
+                    sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
+                    mediaSessionIsNull = false;
+                    var songInfo = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
+                    if (songInfo == null) return;
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        songTitle.Content = songInfo.Title;
+                        songArtist.Content = songInfo.Artist;
+                        songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                        if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                            renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                        toggleMediaControls(true);
+                    });
                 });
-
+                return;
             }
-            else
+            try
             {
-                isPaused = false;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE102";
-                });
-            }
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                var songInfo = mediaSession.ControlSession.TryGetMediaPropertiesAsync().GetAwaiter().GetResult();
+                sessionManager.SessionsChanged += SessionManager_SessionsChanged;
+                sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
+                sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
+                sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
+                sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
+                mediaSessionIsNull = false;
+                var songInfo = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
                 if (songInfo == null) return;
-                songTitle.Content = songInfo.Title;
-                songArtist.Content = songInfo.Artist;
-                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                if(Helper.GetBitmap(songInfo.Thumbnail) != null)
-                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-            });
-        }
-
-        private void renderGradient(Bitmap bmp)
-        {
-            LinearGradientBrush gradientBrush = new LinearGradientBrush(CalculateAverageColor(bmp, false), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
-            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), CalculateAverageColor(bmp, true), new Point(0.5, 1), new Point(1, 1));
-            gridBG.Background = gradientBrush;
-            gridBG2.Background = gradientBrush2;
-        }
-
-        private void MediaManager_OnFocusedSessionChanged(MediaSession mediaSession)
-        {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    songTitle.Content = songInfo.Title;
+                    songArtist.Content = songInfo.Artist;
+                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                        renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                    toggleMediaControls(true);
+                });
+            }
+            catch(NullReferenceException nfe)
+            {
+                // it happens, dont ask how.
+                toggleMediaControls(false);
+                mediaSessionIsNull = true;
+                getMediaSession();
+            }
             
         }
 
-        private void MediaManager_OnAnySessionClosed(MediaSession mediaSession)
+        private async void MainWindow_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
         {
+            Console.WriteLine("MainWindow_TimelinePropertiesChanged Event Called");
+            var songInfo = await sender.TryGetMediaPropertiesAsync();
+            if (songInfo == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                currentSession = null;
-                songTitle.Content = "No song playing";
-                songArtist.Content = "WinIsland by Charamellized";
+                songTitle.Content = songInfo.Title;
+                songArtist.Content = songInfo.Artist;
+                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                toggleMediaControls(true);
+            });
+        }
+        private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
+        {
+            Console.WriteLine("MainWindow_MediaPropertiesChanged Event Called");
+            var songInfo = await sender.TryGetMediaPropertiesAsync();
+            if (songInfo == null) return;
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                songTitle.Content = songInfo.Title;
+                songArtist.Content = songInfo.Artist;
+                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                toggleMediaControls(true);
             });
         }
 
-        private void MediaManager_OnAnySessionOpened(MediaSession mediaSession)
+        private async void MainWindow_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
         {
-            if (mediaSession.ControlSession.GetPlaybackInfo().PlaybackStatus == Windows.Media.Control.GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
-            {
-                isPaused = true;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE102";
-                });
-
-            }
-            else
-            {
-                isPaused = false;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    playPause.Content = "\xE769";
-                });
-            }
+            Console.WriteLine("MainWindow_PlaybackInfoChanged Event Called");
+            var songInfo = await sender.TryGetMediaPropertiesAsync();
+            if (songInfo == null) return;
             Application.Current.Dispatcher.Invoke(() =>
             {
-                currentSession = mediaSession;
+                songTitle.Content = songInfo.Title;
+                songArtist.Content = songInfo.Artist;
+                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                toggleMediaControls(true);
             });
+        }
+
+        private async void SessionManager_CurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)
+        {
+            try
+            {
+                mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
+                toggleMediaControls(true, true);
+            }
+            catch (NullReferenceException nfe)
+            {
+                toggleMediaControls(false);
+                mediaSessionIsNull = true;
+                getMediaSession();
+            }
+        }
+
+        private async void SessionManager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
+        {
+            try
+            {
+                mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
+                toggleMediaControls(true, true);
+            }
+            catch(NullReferenceException nfe)
+            {
+                toggleMediaControls(false);
+                mediaSessionIsNull = true;
+                getMediaSession();
+            }
+        }
+        private void renderGradient(Bitmap bmp)
+        {
+            LinearGradientBrush gradientBrush = new LinearGradientBrush(CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
+            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
+            gridBG.Background = gradientBrush;
+            gridBG2.Background = gradientBrush2;
+            bg.Source = Helper.ConvertToImageSource(bmp);
+            windowBorder.BorderBrush = new SolidColorBrush(CalculateAverageColor(bmp));
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
@@ -228,12 +276,13 @@ namespace WinIsland
                     battery.Content = "\xE859";
                     break;
                 case 10:
-                    battery.Content = "\xE85F";
+                    battery.Content = "\xE83F";
                     break;
             }
         }
         private void Window_MouseEnter()
         {
+            //bg.Visibility = Visibility.Collapsed;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
             double currentY = -40.0D;
@@ -273,7 +322,7 @@ namespace WinIsland
             be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim);
             mainContent.BeginAnimation(Grid.OpacityProperty, generic);
         }
-        
+
         private void Window_MouseLeave()
         {
             double currentY = 0.0D;
@@ -315,7 +364,7 @@ namespace WinIsland
             be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim);
             mainContent.BeginAnimation(Grid.OpacityProperty, generic);
         }
-        
+
         private void StartMouseTracking()
         {
             mouseCheckTimer = new DispatcherTimer();
@@ -353,7 +402,7 @@ namespace WinIsland
                 }
             }
         }
-        
+
         #region Mouse Events P/Invoke
         // Windows API: Get mouse position in screen coordinates
         [DllImport("user32.dll")]
@@ -394,7 +443,7 @@ namespace WinIsland
         private static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
 
         [DllImport("user32.dll")]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int     X, int Y, int cx, int cy, uint uFlags);
+        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
 
 
         [DllImport("user32.dll")]
@@ -405,12 +454,15 @@ namespace WinIsland
         #endregion
         private void Window_Activated(object sender, EventArgs e)
         {
-            
+
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
         {
             ignoreMouseEvent = false;
+            //bg.Visibility = Visibility.Collapsed;
+            gridBG.Visibility = Visibility.Collapsed;
+            gridBG2.Visibility = Visibility.Collapsed;
             AnimateWindowSize(341, 51, (int)firstPos);
             isExpanded = false;
             //Height = 51;
@@ -418,12 +470,14 @@ namespace WinIsland
         }
         private void Border_MouseUp(object sender, MouseButtonEventArgs e)
         {
-            if (!firstLaunch) {
+            if (!firstLaunch)
+            {
                 firstLaunch = true;
                 return;
             }
             if (isExpanded)
             {
+                //bg.Visibility = Visibility.Collapsed;
                 gridBG.Visibility = Visibility.Collapsed;
                 gridBG2.Visibility = Visibility.Collapsed;
                 ignoreMouseEvent = false;
@@ -442,6 +496,7 @@ namespace WinIsland
                 while (isAnimating) ;
                 this.Dispatcher.Invoke(() =>
                 {
+                    //bg.Visibility = Visibility.Visible;
                     gridBG.Visibility = Visibility.Visible;
                     gridBG2.Visibility = Visibility.Visible;
                 });
@@ -474,12 +529,12 @@ namespace WinIsland
             };
             DoubleAnimation blurAnim2 = new DoubleAnimation
             {
-                From = 10,
+                From = 20,
                 To = 0,
                 Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
-            
+
             var stopwatch = Stopwatch.StartNew();
 
             int duration = 300;
@@ -502,7 +557,8 @@ namespace WinIsland
                 SetWindowPos(hwnd, IntPtr.Zero, newLeft, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
                 await Task.Delay(delay);
             }
-            //be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
+            if(blurEverywhere)
+                be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
             mainContent.BeginAnimation(Grid.OpacityProperty, opacity2);
             isAnimating = false;
         }
@@ -516,17 +572,9 @@ namespace WinIsland
         {
 
         }
-        private Color CalculateAverageColor(Bitmap bm, bool secondHalf)
+        private Color CalculateAverageColor(Bitmap bm)
         {
-            int width = 0;
-            if (secondHalf)
-            {
-                width = bm.Width;
-            }
-            else
-            {
-                width = bm.Width / 2;
-            }
+            int width = bm.Width;
             int height = bm.Height;
             int red = 0;
             int green = 0;
@@ -584,32 +632,67 @@ namespace WinIsland
             return Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
         }
 
-        private void beforeRewind_Click(object sender, RoutedEventArgs e)
+        private async void beforeRewind_Click(object sender, RoutedEventArgs e)
         {
-            currentSession.ControlSession.TrySkipPreviousAsync();
+            await sessionManager.GetCurrentSession().TrySkipPreviousAsync();
         }
 
         private void playPause_Click(object sender, RoutedEventArgs e)
         {
-            if (isPaused)
+            playPauseAsync();
+        }
+
+        private async void playPauseAsync()
+        {
+            try
             {
-                isPaused = false;
-                currentSession.ControlSession.TryPlayAsync();
-            }
-            else if(!isPaused)
+                mediaProperties = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
+                sessionManager.GetCurrentSession().TryTogglePlayPauseAsync();
+                Console.WriteLine("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title);
+                Console.WriteLine($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
+                if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                {
+                    playPause.Content = "\xE769";
+                }
+                else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                {
+                    playPause.Content = "\xE102";
+                }
+            }catch(NullReferenceException nfe)
             {
-                isPaused = true;
-                currentSession.ControlSession.TryPauseAsync();
+                toggleMediaControls(false);
+                mediaSessionIsNull = true;
+                getMediaSession();
             }
         }
 
         private void afterForward_Click(object sender, RoutedEventArgs e)
         {
-            currentSession.ControlSession.TrySkipNextAsync();
+            //currentSession.ControlSession.TrySkipNextAsync();
+            sessionManager.GetCurrentSession().TrySkipNextAsync();
+        }
+        public void toggleMediaControls(bool value, bool inAnotherThread = false)
+        {
+            if (inAnotherThread)
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    beforeRewind.IsEnabled = true;
+                    playPause.IsEnabled = true;
+                    afterForward.IsEnabled = true;
+                });
+            }
+            else
+            {
+                beforeRewind.IsEnabled = true;
+                playPause.IsEnabled = true;
+                afterForward.IsEnabled = true;
+            }
         }
     }
     internal static class Helper
     {
+
         internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)
         {
             if (Thumbnail == null)
@@ -667,6 +750,17 @@ namespace WinIsland
             using var fileMemoryStream = new System.IO.MemoryStream(thumbnailBytes);
 
             return (Bitmap)Bitmap.FromStream(fileMemoryStream);
+        }
+        public static BitmapImage ConvertToImageSource(Bitmap src)
+        {
+            MemoryStream ms = new MemoryStream();
+            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
+            BitmapImage image = new BitmapImage();
+            image.BeginInit();
+            ms.Seek(0, SeekOrigin.Begin);
+            image.StreamSource = ms;
+            image.EndInit();
+            return image;
         }
     }
 }

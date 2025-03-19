@@ -1,29 +1,18 @@
 ﻿using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Drawing;
 using System.Drawing.Imaging;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
-using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
 using Windows.Media.Control;
-using Windows.Storage.Streams;
+using static WinIsland.PInvoke;
 using Application = System.Windows.Application;
 using Color = System.Windows.Media.Color;
 using Grid = System.Windows.Controls.Grid;
-using MessageBox = System.Windows.MessageBox;
 using Point = System.Windows.Point;
 
 namespace WinIsland
@@ -45,12 +34,12 @@ namespace WinIsland
         private DispatcherTimer tick;
         private DispatcherTimer waitForMedia;
         double animDurationGlobal = 0.2D;
-        string lastTitleText = "";
         bool mediaSessionIsNull = false;
+        // Long ass name, like what the fuck? who made this shit, couldn't you just name it like GSMTC?
         private GlobalSystemMediaTransportControlsSessionManager? sessionManager;
         private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties;
-        // Toggleable Settings - PLEASE move this to a settings class. (note to self)
-        public bool blurEverywhere = true;
+        // TODO: Toggleable Settings - PLEASE move this to a settings class. (note to self)
+        public bool blurEverywhere = false;
 
         public MainWindow()
         {
@@ -218,7 +207,6 @@ namespace WinIsland
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
             tick.Start();
-            EnableDwmTransitions();
             firstPos = Left;
             //MakeWindowClickThrough(false);
             Topmost = true;
@@ -235,14 +223,58 @@ namespace WinIsland
         private void Tick_Tick(object? sender, EventArgs e)
         {
             clock.Content = DateTime.Now.ToString("hh:mm tt");
-            PowerStatus pwr = SystemInformation.PowerStatus;
             PowerStatus p = SystemInformation.PowerStatus;
             //clock.Content = batteryPercentage;
-            setBatteryPercentage((int)(p.BatteryLifePercent * 100));
+            if(p.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Online)
+                setBatteryPercentage((int)(p.BatteryLifePercent * 100), true);
+            else
+                setBatteryPercentage((int)(p.BatteryLifePercent * 100));
+
         }
-        private void setBatteryPercentage(int percentage)
+        // TODO: Move this to Utils.cs with the function returning a string
+        private void setBatteryPercentage(int percentage, bool isCharging = false)
         {
             int percentageL = percentage / 10;
+            if (isCharging)
+            {
+                switch (percentageL)
+                {
+                    case 0:
+                        battery.Content = "\xE85A";
+                        break;
+                    case 1:
+                        battery.Content = "\xE85B";
+                        break;
+                    case 2:
+                        battery.Content = "\xE85C";
+                        break;
+                    case 3:
+                        battery.Content = "\xE85D";
+                        break;
+                    case 4:
+                        battery.Content = "\xE85E";
+                        break;
+                    case 5:
+                        battery.Content = "\xE85F";
+                        break;
+                    case 6:
+                        battery.Content = "\xE860";
+                        break;
+                    case 7:
+                        battery.Content = "\xE861";
+                        break;
+                    case 8:
+                        battery.Content = "\xE862";
+                        break;
+                    case 9:
+                        battery.Content = "\xE83E";
+                        break;
+                    case 10:
+                        battery.Content = "\xEA93";
+                        break;
+                }
+                return;
+            }
             switch (percentageL)
             {
                 case 0:
@@ -285,6 +317,7 @@ namespace WinIsland
             //bg.Visibility = Visibility.Collapsed;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
+            thumbnailGlow.Visibility = Visibility.Collapsed;
             double currentY = -40.0D;
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, null);
             WindowTransform.Y = currentY;
@@ -402,56 +435,6 @@ namespace WinIsland
                 }
             }
         }
-
-        #region Mouse Events P/Invoke
-        // Windows API: Get mouse position in screen coordinates
-        [DllImport("user32.dll")]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        private static extern bool GetCursorPos(out POINT lpPoint);
-        [DllImport("user32.dll")]
-        private static extern bool GetWindowRect(IntPtr hwnd, out RECT lpRect);
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct POINT
-        {
-            public int X;
-            public int Y;
-        }
-        // Structure for window rectangle
-        [StructLayout(LayoutKind.Sequential)]
-        private struct RECT
-        {
-            public int Left;
-            public int Top;
-            public int Right;
-            public int Bottom;
-        }
-        #endregion
-        #region Window P/Invoke
-
-        // Windows API functions to modify window styles
-        private const int GWL_EXSTYLE = -20;
-        private const int WS_EX_LAYERED = 0x80000;
-        private const int WS_EX_TRANSPARENT = 0x20;
-        private const int WS_EX_TOPMOST = 0x00000008;
-        private const int WS_EX_TOOLWINDOW = 0x00000080;
-        private const int SWP_NOZORDER = 0x0004;
-        private const int SWP_NOACTIVATE = 0x0010;
-        private const int DWMWA_TRANSITIONS_FORCEDISABLED = 3;
-
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
-
-        [DllImport("user32.dll")]
-        private static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
-
-
-        [DllImport("user32.dll")]
-        private static extern int GetWindowLong(IntPtr hwnd, int index);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hwnd, int index, int newStyle);
-        #endregion
         private void Window_Activated(object sender, EventArgs e)
         {
 
@@ -463,7 +446,8 @@ namespace WinIsland
             //bg.Visibility = Visibility.Collapsed;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
-            AnimateWindowSize(341, 51, (int)firstPos);
+            thumbnailGlow.Visibility = Visibility.Collapsed;
+            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
             isExpanded = false;
             //Height = 51;
             //Width = 451;
@@ -480,8 +464,9 @@ namespace WinIsland
                 //bg.Visibility = Visibility.Collapsed;
                 gridBG.Visibility = Visibility.Collapsed;
                 gridBG2.Visibility = Visibility.Collapsed;
+                thumbnailGlow.Visibility = Visibility.Collapsed;
                 ignoreMouseEvent = false;
-                AnimateWindowSize(341, 51, (int)firstPos);
+                AnimateWindowSize(341, 51, (int)firstPos, true, 1);
                 isExpanded = false;
                 return;
             }
@@ -499,20 +484,13 @@ namespace WinIsland
                     //bg.Visibility = Visibility.Visible;
                     gridBG.Visibility = Visibility.Visible;
                     gridBG2.Visibility = Visibility.Visible;
+                    thumbnailGlow.Visibility = Visibility.Visible;
                 });
             }).Start();
             //Height = 250;
             //Width = 902;
         }
-        private void EnableDwmTransitions()
-        {
-            IntPtr hwnd = new WindowInteropHelper(this).Handle;
-            int enableTransition = 1; // Enable animations
-
-            // Apply the transition effect
-            DwmSetWindowAttribute(hwnd, DWMWA_TRANSITIONS_FORCEDISABLED, ref enableTransition, sizeof(int));
-        }
-        private async void AnimateWindowSize(int width, int height, int left)
+        private async void AnimateWindowSize(int width, int height, int left, bool easeoutback = true, double bounceRadius = 2)
         {
             isAnimating = true;
             DoubleAnimation opacity = new DoubleAnimation
@@ -543,12 +521,20 @@ namespace WinIsland
             int startLeft = (int)this.Left;
             int delay = 0; // Delay between steps (ms)
 
-            mainContent.BeginAnimation(Grid.OpacityProperty, opacity);
+            islandContent.BeginAnimation(Grid.OpacityProperty, opacity);
+            gradientBG.BeginAnimation(Grid.OpacityProperty, opacity);
 
             while (stopwatch.ElapsedMilliseconds < duration)
             {
                 double t = (double)stopwatch.ElapsedMilliseconds / duration;
-                double easeT = EaseInOutCubic(t); // Apply easing function
+                double easeT = 0; // Apply easing function
+                if (easeoutback)
+                    easeT = Easing.EaseOutBack(t, bounceRadius);
+                else
+                {
+                    easeT = Easing.EaseInOutCubic(t);
+                }
+                    
 
                 int newWidth = (int)(startWidth + (width - startWidth) * easeT);
                 int newHeight = (int)(startHeight + (height - startHeight) * easeT);
@@ -559,15 +545,11 @@ namespace WinIsland
             }
             if(blurEverywhere)
                 be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
-            mainContent.BeginAnimation(Grid.OpacityProperty, opacity2);
+            islandContent.BeginAnimation(Grid.OpacityProperty, opacity2);
+            gradientBG.BeginAnimation(Grid.OpacityProperty, opacity2);
             isAnimating = false;
         }
-        private double EaseInOutCubic(double t)
-        {
-            t = Math.Clamp(t, 0, 1); // Ensure t is within 0 and 1
-            return t < 0.5 ? 4 * t * t * t : 1 - Math.Pow(-2 * t + 2, 3) / 2;
-        }
-
+        
         private void Frame_Navigated(object sender, NavigationEventArgs e)
         {
 
@@ -671,96 +653,23 @@ namespace WinIsland
             //currentSession.ControlSession.TrySkipNextAsync();
             sessionManager.GetCurrentSession().TrySkipNextAsync();
         }
-        public void toggleMediaControls(bool value, bool inAnotherThread = false)
+        public void toggleMediaControls(bool value, bool inAnotherThread = true)
         {
             if (inAnotherThread)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    beforeRewind.IsEnabled = true;
-                    playPause.IsEnabled = true;
-                    afterForward.IsEnabled = true;
+                    beforeRewind.IsEnabled = value;
+                    playPause.IsEnabled = value;
+                    afterForward.IsEnabled = value;
                 });
             }
             else
             {
-                beforeRewind.IsEnabled = true;
-                playPause.IsEnabled = true;
-                afterForward.IsEnabled = true;
+                beforeRewind.IsEnabled = value;
+                playPause.IsEnabled = value;
+                afterForward.IsEnabled = value;
             }
-        }
-    }
-    internal static class Helper
-    {
-
-        internal static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)
-        {
-            if (Thumbnail == null)
-                return null;
-
-            var thumbnailStream = Thumbnail.OpenReadAsync().GetAwaiter().GetResult();
-            byte[] thumbnailBytes = new byte[thumbnailStream.Size];
-            using (DataReader reader = new DataReader(thumbnailStream))
-            {
-                reader.LoadAsync((uint)thumbnailStream.Size).GetAwaiter().GetResult();
-                reader.ReadBytes(thumbnailBytes);
-            }
-
-            byte[] imageBytes = thumbnailBytes;
-
-            if (convertToPng)
-            {
-                using var fileMemoryStream = new System.IO.MemoryStream(thumbnailBytes);
-                Bitmap thumbnailBitmap = (Bitmap)Bitmap.FromStream(fileMemoryStream);
-
-                if (!thumbnailBitmap.RawFormat.Equals(System.Drawing.Imaging.ImageFormat.Png))
-                {
-                    using var pngMemoryStream = new System.IO.MemoryStream();
-                    thumbnailBitmap.Save(pngMemoryStream, System.Drawing.Imaging.ImageFormat.Png);
-                    imageBytes = pngMemoryStream.ToArray();
-                }
-            }
-
-            var image = new BitmapImage();
-            using (var ms = new System.IO.MemoryStream(imageBytes))
-            {
-                image.BeginInit();
-                image.CacheOption = BitmapCacheOption.OnLoad;
-                image.StreamSource = ms;
-                image.EndInit();
-            }
-
-            return image;
-        }
-        internal static Bitmap? GetBitmap(IRandomAccessStreamReference Thumbnail)
-        {
-            if (Thumbnail == null)
-                return null;
-
-            var thumbnailStream = Thumbnail.OpenReadAsync().GetAwaiter().GetResult();
-            byte[] thumbnailBytes = new byte[thumbnailStream.Size];
-            using (DataReader reader = new DataReader(thumbnailStream))
-            {
-                reader.LoadAsync((uint)thumbnailStream.Size).GetAwaiter().GetResult();
-                reader.ReadBytes(thumbnailBytes);
-            }
-
-            byte[] imageBytes = thumbnailBytes;
-
-            using var fileMemoryStream = new System.IO.MemoryStream(thumbnailBytes);
-
-            return (Bitmap)Bitmap.FromStream(fileMemoryStream);
-        }
-        public static BitmapImage ConvertToImageSource(Bitmap src)
-        {
-            MemoryStream ms = new MemoryStream();
-            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            ms.Seek(0, SeekOrigin.Begin);
-            image.StreamSource = ms;
-            image.EndInit();
-            return image;
         }
     }
 }

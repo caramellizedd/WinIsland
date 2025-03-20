@@ -148,17 +148,31 @@ namespace WinIsland
         private async void MainWindow_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
         {
             Console.WriteLine("MainWindow_PlaybackInfoChanged Event Called");
-            var songInfo = await sender.TryGetMediaPropertiesAsync();
-            if (songInfo == null) return;
-            Application.Current.Dispatcher.Invoke(() =>
+            try
             {
-                songTitle.Content = songInfo.Title;
-                songArtist.Content = songInfo.Artist;
-                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                toggleMediaControls(true);
-            });
+                var songInfo = await sender.TryGetMediaPropertiesAsync();
+                if (songInfo == null) return;
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    songTitle.Content = songInfo.Title;
+                    songArtist.Content = songInfo.Artist;
+                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                        renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                    toggleMediaControls(true);
+                });
+            }
+            catch
+            {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    songTitle.Content = "No media playing.";
+                    songArtist.Content = "WinIsland by Charamellized.";
+                    songThumbnail.Source = null;
+                    toggleMediaControls(false);
+                });
+            }
+            
         }
 
         private async void SessionManager_CurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)

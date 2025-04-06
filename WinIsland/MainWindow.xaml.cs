@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
@@ -14,6 +15,8 @@ using Application = System.Windows.Application;
 using Color = System.Windows.Media.Color;
 using Grid = System.Windows.Controls.Grid;
 using Point = System.Windows.Point;
+using Label = System.Windows.Controls.Label;
+using Button = System.Windows.Controls.Button;
 
 namespace WinIsland
 {
@@ -38,8 +41,7 @@ namespace WinIsland
         // Long ass name, like what the fuck? who made this shit, couldn't you just name it like GSMTC?
         private GlobalSystemMediaTransportControlsSessionManager? sessionManager;
         private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties;
-        // TODO: Toggleable Settings - PLEASE move this to a settings class. (note to self)
-        public bool blurEverywhere = false;
+        Settings settings = new Settings();
 
         public MainWindow()
         {
@@ -47,6 +49,8 @@ namespace WinIsland
             StartMouseTracking();
             getMediaSession();
             toggleMediaControls(false);
+            settingsButton.IsEnabled = false;
+            settingsButton.Opacity = 0;
         }
 
         private async void getMediaSession()
@@ -206,12 +210,16 @@ namespace WinIsland
         }
         private void renderGradient(Bitmap bmp)
         {
-            LinearGradientBrush gradientBrush = new LinearGradientBrush(CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
-            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
+            LinearGradientBrush gradientBrush = new LinearGradientBrush(Helper.CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
+            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
             gridBG2.Background = gradientBrush2;
             bg.Source = Helper.ConvertToImageSource(bmp);
-            windowBorder.BorderBrush = new SolidColorBrush(CalculateAverageColor(bmp));
+            Color color = Helper.CalculateAverageColor(bmp);
+            windowBorder.BorderBrush = new SolidColorBrush(color);
+            settings.thumbnail = bmp;
+            settings.borderColor = color;
+            dropShadowEffect.Color = color;
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
@@ -461,8 +469,8 @@ namespace WinIsland
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
             thumbnailGlow.Visibility = Visibility.Collapsed;
-            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
             isExpanded = false;
+            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
             //Height = 51;
             //Width = 451;
         }
@@ -476,12 +484,12 @@ namespace WinIsland
             if (isExpanded)
             {
                 //bg.Visibility = Visibility.Collapsed;
+                isExpanded = false;
                 gridBG.Visibility = Visibility.Collapsed;
                 gridBG2.Visibility = Visibility.Collapsed;
                 thumbnailGlow.Visibility = Visibility.Collapsed;
                 ignoreMouseEvent = false;
                 AnimateWindowSize(341, 51, (int)firstPos, true, 1);
-                isExpanded = false;
                 return;
             }
             if (ignoreMouseEvent) return;
@@ -507,23 +515,75 @@ namespace WinIsland
         private async void AnimateWindowSize(int width, int height, int left, bool easeoutback = true, double bounceRadius = 2)
         {
             isAnimating = true;
-            DoubleAnimation opacity = new DoubleAnimation
+            ThicknessAnimation ta;
+            if (isExpanded)
+            {
+                ta = new ThicknessAnimation
+                {
+                    From = new Thickness(0, 0, 10, 0),
+                    To = new Thickness(0, 0, 35, 0),
+                    Duration = new TimeSpan(0, 0, 0, 0, 300),
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                };
+                settingsButton.IsEnabled = true;
+            }
+            else if (!isExpanded)
+            {
+                ta = new ThicknessAnimation
+                {
+                    From = new Thickness(0, 0, 32, 0),
+                    To = new Thickness(0, 0, 10, 0),
+                    Duration = new TimeSpan(0, 0, 0, 0, 300),
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                };
+                settingsButton.IsEnabled = false;
+            }
+            else
+            {
+                ta = new ThicknessAnimation
+                {
+                    From = new Thickness(0, 0, 32, 0),
+                    To = new Thickness(0, 0, 10, 0),
+                    Duration = new TimeSpan(0, 0, 0, 0, 300),
+                    EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
+                };
+                settingsButton.IsEnabled = false;
+            }
+            DoubleAnimation blurIslandContentBegin = new DoubleAnimation
+            {
+                From = 0,
+                To = 20,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
+            };
+            DoubleAnimation resetOpacity = new DoubleAnimation
+                {
+                    From = 1,
+                    To = 0.0,
+                    Duration = TimeSpan.FromSeconds(0)
+                };
+            DoubleAnimation resetOpacityDim = new DoubleAnimation
             {
                 From = 1,
-                To = 0.0,
-                Duration = TimeSpan.FromSeconds(0)
+                To = 0.3,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
             };
-            DoubleAnimation opacity2 = new DoubleAnimation
+            DoubleAnimation opacityShowAnim = new DoubleAnimation
             {
                 From = 0.0,
                 To = 1,
                 Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
-            DoubleAnimation blurAnim2 = new DoubleAnimation
+            DoubleAnimation opacityShowAnimDim = new DoubleAnimation
+            {
+                From = 0.3,
+                To = 1,
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+            };
+            DoubleAnimation blurIslandContentAnim = new DoubleAnimation
             {
                 From = 20,
                 To = 0,
-                Duration = TimeSpan.FromSeconds(animDurationGlobal)
+                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
             };
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
 
@@ -535,8 +595,16 @@ namespace WinIsland
             int startLeft = (int)this.Left;
             int delay = 0; // Delay between steps (ms)
 
-            islandContent.BeginAnimation(Grid.OpacityProperty, opacity);
-            gradientBG.BeginAnimation(Grid.OpacityProperty, opacity);
+            islandContent.BeginAnimation(Grid.OpacityProperty, resetOpacity);
+            gradientBG.BeginAnimation(Grid.OpacityProperty, resetOpacity);
+            settingsButton.BeginAnimation(Button.OpacityProperty, resetOpacity);
+            if (settings.blurEverywhere)
+            {
+                mainContent.BeginAnimation(Grid.OpacityProperty, resetOpacityDim);
+                be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentBegin);
+            }
+            if (!isExpanded)
+                battery.BeginAnimation(Label.MarginProperty, ta);
 
             while (stopwatch.ElapsedMilliseconds < duration)
             {
@@ -557,75 +625,24 @@ namespace WinIsland
                 SetWindowPos(hwnd, IntPtr.Zero, newLeft, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
                 await Task.Delay(delay);
             }
-            if(blurEverywhere)
-                be.BeginAnimation(BlurEffect.RadiusProperty, blurAnim2);
-            islandContent.BeginAnimation(Grid.OpacityProperty, opacity2);
-            gradientBG.BeginAnimation(Grid.OpacityProperty, opacity2);
+            if (settings.blurEverywhere)
+            {
+                mainContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnimDim);
+                be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
+            }
+            if (isExpanded)
+            {
+                settingsButton.BeginAnimation(Button.OpacityProperty, opacityShowAnim);
+                battery.BeginAnimation(Label.MarginProperty, ta);
+            }
+            islandContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
+            gradientBG.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
             isAnimating = false;
         }
         
         private void Frame_Navigated(object sender, NavigationEventArgs e)
         {
 
-        }
-        private Color CalculateAverageColor(Bitmap bm)
-        {
-            int width = bm.Width;
-            int height = bm.Height;
-            int red = 0;
-            int green = 0;
-            int blue = 0;
-            int minDiversion = 15; // drop pixels that do not differ by at least minDiversion between color values (white, gray or black)
-            int dropped = 0; // keep track of dropped pixels
-            long[] totals = new long[] { 0, 0, 0 };
-            int bppModifier = bm.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ? 3 : 4; // cutting corners, will fail on anything else but 32 and 24 bit images
-
-            BitmapData srcData = bm.LockBits(new System.Drawing.Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadOnly, bm.PixelFormat);
-            int stride = srcData.Stride;
-            IntPtr Scan0 = srcData.Scan0;
-
-            unsafe
-            {
-                byte* p = (byte*)(void*)Scan0;
-
-                for (int y = 0; y < height; y++)
-                {
-                    for (int x = 0; x < width; x++)
-                    {
-                        int idx = (y * stride) + x * bppModifier;
-                        red = p[idx + 2];
-                        green = p[idx + 1];
-                        blue = p[idx];
-                        if (Math.Abs(red - green) > minDiversion || Math.Abs(red - blue) > minDiversion || Math.Abs(green - blue) > minDiversion)
-                        {
-                            totals[2] += red;
-                            totals[1] += green;
-                            totals[0] += blue;
-                        }
-                        else
-                        {
-                            dropped++;
-                        }
-                    }
-                }
-            }
-
-            int count = width * height - dropped;
-            int avgR, avgB, avgG;
-            if (totals[2] != 0)
-                avgR = (int)(totals[2] / count);
-            else
-                avgR = 255;
-            if (totals[1] != 0)
-                avgG = (int)(totals[1] / count);
-            else
-                avgG = 255;
-            if (totals[0] != 0)
-                avgB = (int)(totals[0] / count);
-            else
-                avgB = 255;
-            bm.UnlockBits(srcData);
-            return Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
         }
 
         private async void beforeRewind_Click(object sender, RoutedEventArgs e)
@@ -684,6 +701,12 @@ namespace WinIsland
                 playPause.IsEnabled = value;
                 afterForward.IsEnabled = value;
             }
+        }
+
+        private void settingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            PopoutWindow pw = new PopoutWindow();
+            pw.Show();
         }
     }
 }

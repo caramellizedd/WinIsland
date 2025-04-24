@@ -17,6 +17,9 @@ using Grid = System.Windows.Controls.Grid;
 using Point = System.Windows.Point;
 using Label = System.Windows.Controls.Label;
 using Button = System.Windows.Controls.Button;
+using MessageBox = System.Windows.MessageBox;
+using NAudio.CoreAudioApi;
+using Timer = System.Timers.Timer;
 
 namespace WinIsland
 {
@@ -27,20 +30,34 @@ namespace WinIsland
     {
         double firstPos = 0;
         bool firstLaunch = false;
-        bool showing = false;
-        bool isInTargetArea = false;
-        bool isAnimating = false;
+        bool isFirstTime = false; // Used for showing welcome screen etc.
+        bool showing = false; // Is the overlay showing (small or expanded)
+        bool isInTargetArea = false; // Is mouse in the target area (show island)
+        bool isAnimating = false; // Is an animation playing
         bool ignoreMouseEvent = false;
         bool isExpanded = false;
+        bool mouseOver = false;
         bool expandAnimFinished = false;
+        bool islandLoaded = false; // Is the island fully loaded?
+        bool volumeBarShown = false;
+        bool smallEventShown = false;
+        // Timer for events
         private DispatcherTimer mouseCheckTimer;
-        private DispatcherTimer tick;
+        private DispatcherTimer tick; // Do an event for every tick (duration is DispatcherTimer default duration)
         private DispatcherTimer waitForMedia;
-        double animDurationGlobal = 0.2D;
+        private Stopwatch ignoreVolumeEvent = new Stopwatch(); // Temporarily ignore volume event
+        private Stopwatch ignoreVolumeEvent2 = new Stopwatch(); // Temporarily ignore slider event
+        // Global Values
+        double animDurationGlobal = 0.2D; // Change this to be customizable later.
         bool mediaSessionIsNull = false;
+        // Media Player
         // Long ass name, like what the fuck? who made this shit, couldn't you just name it like GSMTC?
-        private GlobalSystemMediaTransportControlsSessionManager? sessionManager;
-        private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties;
+        private GlobalSystemMediaTransportControlsSessionManager? sessionManager; // For getting the current media session
+        private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties; // For getting media player properties (music name, thumbnail, player state etc)
+        // Volume Controls
+        private static MMDeviceEnumerator enumer = new MMDeviceEnumerator();
+        private MMDevice dev = enumer.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        // Settings
         Settings settings = new Settings();
 
         public MainWindow()
@@ -51,8 +68,95 @@ namespace WinIsland
             toggleMediaControls(false);
             settingsButton.IsEnabled = false;
             settingsButton.Opacity = 0;
+            setupEvents();
+            systemEventSmall.Visibility = Visibility.Hidden;
+            sysEventTimer.Interval = 3000;
         }
-
+        Timer sysEventTimer = new Timer();
+        private void setupEvents()
+        {
+            dev.AudioEndpointVolume.OnVolumeNotification += (data) =>
+            {
+                Dispatcher.Invoke(new Action(() => {
+                    if(ignoreVolumeEvent.ElapsedMilliseconds >= 300 || !ignoreVolumeEvent.IsRunning)
+                        triggerSystemEvent(0, data.ChannelVolume.First());
+                }));
+            };
+            sysEventTimer.Elapsed += (sender, e) =>
+            {
+                Dispatcher.Invoke(new Action(() => {
+                    if (!isExpanded) ignoreMouseEvent = false;
+                    BlurEffect be = new BlurEffect();
+                    be.RenderingBias = RenderingBias.Performance;
+                    be.Radius = 0;
+                    miniIslandGrid.Effect = be;
+                    DoubleAnimation da = new DoubleAnimation
+                    {
+                        From = 20,
+                        To = 0,
+                        Duration = TimeSpan.FromSeconds(0.2)
+                    };
+                    DoubleAnimation hideEvent = new DoubleAnimation
+                    {
+                        From = 1,
+                        To = 0,
+                        Duration = TimeSpan.FromSeconds(0.3)
+                    };
+                    hideEvent.Completed += (sender, e) =>
+                    {
+                        systemEventSmall.Visibility = Visibility.Hidden;
+                        sysEventTimer.Stop();
+                        volumeBarShown = false;
+                        smallEventShown = false;    
+                    };
+                    be.BeginAnimation(BlurEffect.RadiusProperty, da);
+                    systemEventSmall.BeginAnimation(Grid.OpacityProperty, hideEvent);
+                }));
+            };
+        }
+        private void triggerSystemEvent(int id, double volume = 0)
+        {
+            switch (id){
+                case 0:
+                    if (!ignoreVolumeEvent2.IsRunning)
+                        ignoreVolumeEvent2.Start();
+                    ignoreVolumeEvent2.Restart();
+                    sysEventTimer.Stop();
+                    ignoreMouseEvent = true;
+                    smallEventShown = true;
+                    BlurEffect be = new BlurEffect();
+                    be.RenderingBias = RenderingBias.Performance;
+                    be.Radius = 0;
+                    systemEventSmall.Visibility = Visibility.Visible;
+                    miniIslandGrid.Effect = be;
+                    if (!volumeBarShown)
+                    {
+                        volumeBarShown = true;
+                        DoubleAnimation da = new DoubleAnimation
+                        {
+                            From = 0,
+                            To = 20,
+                            Duration = TimeSpan.FromSeconds(0.3)
+                        };
+                        DoubleAnimation showEvent = new DoubleAnimation
+                        {
+                            From = 0,
+                            To = 1,
+                            Duration = TimeSpan.FromSeconds(0.3)
+                        };
+                        be.BeginAnimation(BlurEffect.RadiusProperty, da);
+                        systemEventSmall.BeginAnimation(Grid.OpacityProperty, showEvent);
+                    }
+                    else
+                    {
+                        be.Radius = 20;
+                    }
+                    if (!showing) Window_MouseEnter();
+                    volumeSlider.Value = volume;
+                    sysEventTimer.Start();
+                    break;
+            }
+        }
         private async void getMediaSession()
         {
             sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
@@ -223,6 +327,7 @@ namespace WinIsland
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
+        BlurEffect be2 = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Focus();
@@ -235,11 +340,13 @@ namespace WinIsland
             Top = 0;
             ShowInTaskbar = false;
             mainContent.Effect = be;
+            windowContent.Effect = be2;
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
             Window_MouseLeave();
             Focus();
+            islandLoaded = true;
         }
 
         private void Tick_Tick(object? sender, EventArgs e)
@@ -336,6 +443,9 @@ namespace WinIsland
         }
         private void Window_MouseEnter()
         {
+            if (!islandLoaded) return;
+            isInTargetArea = true;
+            showing = true;
             //bg.Visibility = Visibility.Collapsed;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
@@ -380,6 +490,8 @@ namespace WinIsland
 
         private void Window_MouseLeave()
         {
+            isInTargetArea = false;
+            showing = false;
             double currentY = 0.0D;
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, null);
             WindowTransform.Y = currentY;
@@ -439,21 +551,17 @@ namespace WinIsland
                     return;
                 bool inRange = (mousePos.X >= windowRect.Left && mousePos.X <= windowRect.Right) &&
                           (showing ? (mousePos.Y >= 0 && mousePos.Y <= 41) : (mousePos.Y >= 0 && mousePos.Y <= 1));
-
-                if (inRange && !isInTargetArea)
+                mouseOver = inRange;
+                if (inRange && !isInTargetArea && !showing)
                 {
                     isAnimating = true;
                     Thread.Sleep(210);
-                    if (!inRange) return;
-                    isInTargetArea = true;
+                    //if (!inRange) return;
                     Window_MouseEnter();
-                    showing = true;
                 }
-                else if (!inRange && isInTargetArea)
+                else if (!inRange && isInTargetArea && showing)
                 {
-                    isInTargetArea = false;
                     Window_MouseLeave();
-                    showing = false;
                 }
             }
         }
@@ -465,14 +573,7 @@ namespace WinIsland
         private void Window_Deactivated(object sender, EventArgs e)
         {
             ignoreMouseEvent = false;
-            //bg.Visibility = Visibility.Collapsed;
-            gridBG.Visibility = Visibility.Collapsed;
-            gridBG2.Visibility = Visibility.Collapsed;
-            thumbnailGlow.Visibility = Visibility.Collapsed;
-            isExpanded = false;
-            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
-            //Height = 51;
-            //Width = 451;
+            shrinkIsland();
         }
         private void Border_MouseUp(object sender, MouseButtonEventArgs e)
         {
@@ -483,32 +584,11 @@ namespace WinIsland
             }
             if (isExpanded)
             {
-                //bg.Visibility = Visibility.Collapsed;
-                isExpanded = false;
-                gridBG.Visibility = Visibility.Collapsed;
-                gridBG2.Visibility = Visibility.Collapsed;
-                thumbnailGlow.Visibility = Visibility.Collapsed;
-                ignoreMouseEvent = false;
-                AnimateWindowSize(341, 51, (int)firstPos, true, 1);
+                shrinkIsland();
                 return;
             }
-            if (ignoreMouseEvent) return;
-            isExpanded = true;
-            Topmost = false;
-            Topmost = true;
-            ignoreMouseEvent = true;
-            AnimateWindowSize(852, 350, (int)firstPos - 255);
-            new Thread(() =>
-            {
-                while (isAnimating) ;
-                this.Dispatcher.Invoke(() =>
-                {
-                    //bg.Visibility = Visibility.Visible;
-                    gridBG.Visibility = Visibility.Visible;
-                    gridBG2.Visibility = Visibility.Visible;
-                    thumbnailGlow.Visibility = Visibility.Visible;
-                });
-            }).Start();
+            if (ignoreMouseEvent && !smallEventShown) return;
+            expandIsland();
             //Height = 250;
             //Width = 902;
         }
@@ -549,12 +629,6 @@ namespace WinIsland
                 };
                 settingsButton.IsEnabled = false;
             }
-            DoubleAnimation blurIslandContentBegin = new DoubleAnimation
-            {
-                From = 0,
-                To = 20,
-                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
-            };
             DoubleAnimation resetOpacity = new DoubleAnimation
                 {
                     From = 1,
@@ -583,13 +657,13 @@ namespace WinIsland
             {
                 From = 20,
                 To = 0,
-                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
+                Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
 
             var stopwatch = Stopwatch.StartNew();
 
-            int duration = 300;
+            int duration = ((int)(animDurationGlobal*1000))+100;
             int startWidth = (int)this.Width;
             int startHeight = (int)this.Height;
             int startLeft = (int)this.Left;
@@ -601,7 +675,8 @@ namespace WinIsland
             if (settings.blurEverywhere)
             {
                 mainContent.BeginAnimation(Grid.OpacityProperty, resetOpacityDim);
-                be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentBegin);
+                be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
+                be2.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
             }
             if (!isExpanded)
                 battery.BeginAnimation(Label.MarginProperty, ta);
@@ -616,19 +691,18 @@ namespace WinIsland
                 {
                     easeT = Easing.EaseInOutCubic(t);
                 }
-                    
 
-                int newWidth = (int)(startWidth + (width - startWidth) * easeT);
-                int newHeight = (int)(startHeight + (height - startHeight) * easeT);
-                int newLeft = (int)(startLeft + (left - startLeft) * easeT);
 
-                SetWindowPos(hwnd, IntPtr.Zero, newLeft, 0, newWidth, newHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+                double newWidth = (startWidth + (width - startWidth) * easeT);
+                double newHeight = (startHeight + (height - startHeight) * easeT);
+                double newLeft = (startLeft + (left - startLeft) * easeT);
+
+                SetWindowPos(hwnd, IntPtr.Zero, (int)Math.Round(newLeft), 0, (int)Math.Round(newWidth), (int)Math.Round(newHeight), SWP_NOZORDER | SWP_NOACTIVATE);
                 await Task.Delay(delay);
             }
             if (settings.blurEverywhere)
             {
                 mainContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnimDim);
-                be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
             }
             if (isExpanded)
             {
@@ -678,7 +752,34 @@ namespace WinIsland
                 getMediaSession();
             }
         }
-
+        private void expandIsland()
+        {
+            isExpanded = true;
+            Topmost = false;
+            Topmost = true;
+            ignoreMouseEvent = true;
+            AnimateWindowSize(852, 350, (int)firstPos - 255);
+            new Thread(() =>
+            {
+                while (isAnimating) ;
+                this.Dispatcher.Invoke(() =>
+                {
+                    //bg.Visibility = Visibility.Visible;
+                    gridBG.Visibility = Visibility.Visible;
+                    gridBG2.Visibility = Visibility.Visible;
+                    thumbnailGlow.Visibility = Visibility.Visible;
+                });
+            }).Start();
+        }
+        private void shrinkIsland()
+        {
+            isExpanded = false;
+            gridBG.Visibility = Visibility.Collapsed;
+            gridBG2.Visibility = Visibility.Collapsed;
+            thumbnailGlow.Visibility = Visibility.Collapsed;
+            ignoreMouseEvent = false;
+            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
+        }
         private void afterForward_Click(object sender, RoutedEventArgs e)
         {
             //currentSession.ControlSession.TrySkipNextAsync();
@@ -707,6 +808,19 @@ namespace WinIsland
         {
             PopoutWindow pw = new PopoutWindow();
             pw.Show();
+        }
+        private void volumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if(ignoreVolumeEvent2.ElapsedMilliseconds >= 300 || !ignoreVolumeEvent2.IsRunning)
+            {
+                if (!ignoreVolumeEvent.IsRunning)
+                    ignoreVolumeEvent.Start();
+                sysEventTimer.Stop();
+                dev.AudioEndpointVolume.MasterVolumeLevelScalar = (float)(volumeSlider.Value);
+                ignoreVolumeEvent.Restart();
+                sysEventTimer.Start();
+                //triggerSystemEvent(0, volumeSlider.Value);
+            }
         }
     }
 }

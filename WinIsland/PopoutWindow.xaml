@@ -9,6 +9,7 @@
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
         MinHeight="600" MinWidth="800"
+        WindowStartupLocation="CenterScreen"
         Title="PopoutWindow" Height="600" Width="800">
     <Window.Resources>
         <SolidColorBrush x:Key="TabItem.Selected.Background" Color="#33444444"/>
@@ -149,72 +150,76 @@
                 </Style.Triggers>
             </Style>
         </Grid.Resources>
-        <Image VerticalAlignment="Center" ClipToBounds="True" Margin="-30" x:Name="bg" Opacity="0.2" Stretch="UniformToFill">
-            <Image.Effect>
-                <BlurEffect Radius="40" RenderingBias="Performance"/>
-            </Image.Effect>
-        </Image>
-        <Label x:Name="windowTitle" FontSize="32" Margin="31,37,0,0" FontFamily="Segoe UI" Content="Window Popout Title - OwO" Foreground="White" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top">
-            <Label.RenderTransform>
-                <TranslateTransform x:Name="windowTitleTransform"/>
-            </Label.RenderTransform>
-        </Label>
-        <TabControl x:Name="tabControl" SelectionChanged="TabControl_SelectionChanged" Style="{DynamicResource tabControlMainStyle}" Margin="0,107,0,0" BorderThickness="0">
-            <TabControl.Resources>
-                <ControlTemplate x:Key="tabItemStyle" TargetType="TabItem">
-                    <Grid>
-                        <Border Name="Border" 
-                            BorderThickness="1,1,1,0" 
-                            Background="Transparent"
-                            BorderBrush="#33FFFFFF"
-                            CornerRadius="0" >
-                            <ContentPresenter x:Name="ContentSite" Margin="-1,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                          ContentSource="Header"  RecognizesAccessKey="True"/>
-                        </Border>
-                    </Grid>
-                </ControlTemplate>
-                <Style TargetType="{x:Type TabItem}">
-                    <Setter Property="BorderThickness" Value="0"/>
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="HeaderTemplate">
-                        <Setter.Value>
-                            <DataTemplate>
-                                <Border x:Name="grid" Background="#33222222" BorderThickness="0">
-                                    <ContentPresenter>
-                                        <ContentPresenter.Content>
-                                            <TextBlock Margin="4" Text="{TemplateBinding Content}" Foreground="White"/>
-                                        </ContentPresenter.Content>
-                                    </ContentPresenter>
+        <Border x:Name="windowBorder" BorderThickness="1">
+            <Grid>
+                <Image VerticalAlignment="Center" ClipToBounds="True" Margin="-30" x:Name="bg" Opacity="0.2" Stretch="UniformToFill">
+                    <Image.Effect>
+                        <BlurEffect Radius="40" RenderingBias="Performance"/>
+                    </Image.Effect>
+                </Image>
+                <Label x:Name="windowTitle" FontSize="32" Margin="31,37,0,0" FontFamily="Segoe UI" Content="Window Popout Title - OwO" Foreground="White" VerticalContentAlignment="Center" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <Label.RenderTransform>
+                        <TranslateTransform x:Name="windowTitleTransform"/>
+                    </Label.RenderTransform>
+                </Label>
+                <TabControl x:Name="tabControl" SelectionChanged="TabControl_SelectionChanged" Style="{DynamicResource tabControlMainStyle}" Margin="0,107,0,0" BorderThickness="0">
+                    <TabControl.Resources>
+                        <ControlTemplate x:Key="tabItemStyle" TargetType="TabItem">
+                            <Grid>
+                                <Border Name="Border" 
+                    BorderThickness="1,1,1,0" 
+                    Background="Transparent"
+                    BorderBrush="#33FFFFFF"
+                    CornerRadius="0" >
+                                    <ContentPresenter x:Name="ContentSite" Margin="-1,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                  ContentSource="Header"  RecognizesAccessKey="True"/>
                                 </Border>
-                                <DataTemplate.Triggers>
-                                    <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type TabItem}},Path=IsSelected}" Value="True">
-                                        <Setter TargetName="grid" Property="Background" Value="#33444444"/>
-                                    </DataTrigger>
-                                </DataTemplate.Triggers>
-                            </DataTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-                <Style TargetType="{x:Type TabPanel}">
-                    <Setter Property="Background" Value="Transparent"/>
-                </Style>
-            </TabControl.Resources>
-            <TabItem x:Name="main" Header="Main" Background="#00000000" Template="{StaticResource tabItemStyle}">
-            </TabItem>
-            <TabItem x:Name="advanced" Header="Advanced" Background="#00000000" Template="{StaticResource tabItemStyle}"  >
-            </TabItem>
-        </TabControl>
-        <Frame x:Name="contentFrame" Margin="0,134,0,0" Background="Transparent" NavigationUIVisibility="Hidden" Navigating="contentFrame_Navigating" Navigated="contentFrame_Navigated">
-            <Frame.RenderTransform>
-                <TranslateTransform x:Name="frameAnimation"/>
-            </Frame.RenderTransform>
-        </Frame>
-        <Grid x:Name="titleBar" Height="32" VerticalAlignment="Top" Background="#00000000" MouseDown="titleBar_MouseDown">
-            <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
-                <Button x:Name="closeButton" MouseLeave="closeButton_MouseLeave" MouseDown="closeButton_MouseDown" MouseEnter="closeButton_MouseEnter"  Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xE8bb;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="closeButton_Click"/>
-                <Button x:Name="maxRestoreButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe922;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="maxRestoreButton_Click"/>
-                <Button x:Name="minimizeButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe921;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="minimizeButton_Click"/>
-            </StackPanel>
-        </Grid>
+                            </Grid>
+                        </ControlTemplate>
+                        <Style TargetType="{x:Type TabItem}">
+                            <Setter Property="BorderThickness" Value="0"/>
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="HeaderTemplate">
+                                <Setter.Value>
+                                    <DataTemplate>
+                                        <Border x:Name="grid" Background="#33222222" BorderThickness="0">
+                                            <ContentPresenter>
+                                                <ContentPresenter.Content>
+                                                    <TextBlock Margin="4" Text="{TemplateBinding Content}" Foreground="White"/>
+                                                </ContentPresenter.Content>
+                                            </ContentPresenter>
+                                        </Border>
+                                        <DataTemplate.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource Mode=FindAncestor,AncestorType={x:Type TabItem}},Path=IsSelected}" Value="True">
+                                                <Setter TargetName="grid" Property="Background" Value="#33444444"/>
+                                            </DataTrigger>
+                                        </DataTemplate.Triggers>
+                                    </DataTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                        <Style TargetType="{x:Type TabPanel}">
+                            <Setter Property="Background" Value="Transparent"/>
+                        </Style>
+                    </TabControl.Resources>
+                    <TabItem x:Name="main" Header="Main" Background="#00000000" Template="{StaticResource tabItemStyle}">
+                    </TabItem>
+                    <TabItem x:Name="advanced" Header="Advanced" Background="#00000000" Template="{StaticResource tabItemStyle}"  >
+                    </TabItem>
+                </TabControl>
+                <Frame x:Name="contentFrame" Margin="0,134,0,0" Background="Transparent" NavigationUIVisibility="Hidden" Navigating="contentFrame_Navigating" Navigated="contentFrame_Navigated">
+                    <Frame.RenderTransform>
+                        <TranslateTransform x:Name="frameAnimation"/>
+                    </Frame.RenderTransform>
+                </Frame>
+                <Grid x:Name="titleBar" Height="32" VerticalAlignment="Top" Background="#00000000" MouseDown="titleBar_MouseDown">
+                    <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
+                        <Button x:Name="closeButton" MouseLeave="closeButton_MouseLeave" MouseDown="closeButton_MouseDown" MouseEnter="closeButton_MouseEnter"  Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xE8bb;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="closeButton_Click"/>
+                        <Button x:Name="maxRestoreButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe922;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="maxRestoreButton_Click"/>
+                        <Button x:Name="minimizeButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe921;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="minimizeButton_Click"/>
+                    </StackPanel>
+                </Grid>
+            </Grid>
+        </Border>
     </Grid>
 </Window>

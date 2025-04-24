@@ -61,7 +61,7 @@ namespace WinIsland
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
-            Helper.setBorderColor(this, Settings.instance.borderColor, Helper.ConvertToABGR(Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));
+            Helper.setBorderColor(this, Settings.instance.borderColor, Helper.ConvertToABGR(Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B), windowBorder);
         }
 
         private void contentFrame_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)

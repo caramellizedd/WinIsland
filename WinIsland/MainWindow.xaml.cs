@@ -311,6 +311,10 @@ namespace WinIsland
                 mediaSessionIsNull = true;
                 getMediaSession();
             }
+            catch 
+            {
+                // COM Crash fuck off
+            }
         }
         private void renderGradient(Bitmap bmp)
         {
@@ -670,6 +674,7 @@ namespace WinIsland
             int delay = 0; // Delay between steps (ms)
 
             islandContent.BeginAnimation(Grid.OpacityProperty, resetOpacity);
+            islandMini.BeginAnimation(Grid.OpacityProperty, resetOpacity);
             gradientBG.BeginAnimation(Grid.OpacityProperty, resetOpacity);
             settingsButton.BeginAnimation(Button.OpacityProperty, resetOpacity);
             if (settings.blurEverywhere)
@@ -710,6 +715,7 @@ namespace WinIsland
                 battery.BeginAnimation(Label.MarginProperty, ta);
             }
             islandContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
+            islandMini.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
             gradientBG.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
             isAnimating = false;
         }
@@ -740,10 +746,12 @@ namespace WinIsland
                 if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
                 {
                     playPause.Content = "\xE769";
+                    playPause2.Content = "\xE769";
                 }
                 else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
                 {
                     playPause.Content = "\xE102";
+                    playPause2.Content = "\xE102";
                 }
             }catch(NullReferenceException nfe)
             {
@@ -768,6 +776,7 @@ namespace WinIsland
                     gridBG.Visibility = Visibility.Visible;
                     gridBG2.Visibility = Visibility.Visible;
                     thumbnailGlow.Visibility = Visibility.Visible;
+                    islandMini.Visibility = Visibility.Collapsed;
                 });
             }).Start();
         }
@@ -777,6 +786,7 @@ namespace WinIsland
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
             thumbnailGlow.Visibility = Visibility.Collapsed;
+            islandMini.Visibility = Visibility.Visible;
             ignoreMouseEvent = false;
             AnimateWindowSize(341, 61, (int)firstPos, true, 1);
         }
@@ -794,6 +804,9 @@ namespace WinIsland
                     beforeRewind.IsEnabled = value;
                     playPause.IsEnabled = value;
                     afterForward.IsEnabled = value;
+                    beforeRewind2.IsEnabled = value;
+                    playPause2.IsEnabled = value;
+                    afterForward2.IsEnabled = value;
                 });
             }
             else
@@ -801,6 +814,9 @@ namespace WinIsland
                 beforeRewind.IsEnabled = value;
                 playPause.IsEnabled = value;
                 afterForward.IsEnabled = value;
+                beforeRewind2.IsEnabled = value;
+                playPause2.IsEnabled = value;
+                afterForward2.IsEnabled = value;
             }
         }
 

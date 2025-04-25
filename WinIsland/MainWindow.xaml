@@ -106,9 +106,14 @@
                 </Grid>
                 <Grid x:Name="miniIslandGrid">
                     <!--Clock-->
-                    <Label x:Name="clock" Margin="10,0,0,0" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
+                    <Label x:Name="clock" Margin="10,2,0,0" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
                     <!--Battery-->
                     <Label x:Name="battery" Margin="0,0,10,0" HorizontalAlignment="Right" Content="&#xE83F;" Foreground="White" FontSize="26" FontFamily="./Fonts/#Segoe Fluent Icons" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
+                    <StackPanel x:Name="islandMini" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,60,0">
+                        <Button x:Name="beforeRewind2" Click="beforeRewind_Click" Content="&#xE100;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
+                        <Button x:Name="playPause2" Click="playPause_Click" Content="&#xE102;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
+                        <Button x:Name="afterForward2" Click="afterForward_Click" Content="&#xE101;" Height="25" Width="25" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
+                    </StackPanel>
                 </Grid>
                 <Grid x:Name="systemEventSmall" VerticalAlignment="Top" Margin="10,0,10,0">
                     <Label Margin="5,0,0,0" Content="Volume : " FontFamily="Segoe UI" FontSize="16" Foreground="White"/>

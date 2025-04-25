@@ -778,7 +778,7 @@ namespace WinIsland
             gridBG2.Visibility = Visibility.Collapsed;
             thumbnailGlow.Visibility = Visibility.Collapsed;
             ignoreMouseEvent = false;
-            AnimateWindowSize(341, 51, (int)firstPos, true, 1);
+            AnimateWindowSize(341, 61, (int)firstPos, true, 1);
         }
         private void afterForward_Click(object sender, RoutedEventArgs e)
         {

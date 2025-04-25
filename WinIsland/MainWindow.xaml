@@ -13,10 +13,10 @@
         ResizeMode="NoResize"
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
-        Title="WinIslandOwO234" Height="51" Width="341">
+        Title="WinIslandOwO234" Height="61" Width="341">
 
     <Grid x:Name="windowContent">
-        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="10,0,10,14" Background="Black" BorderBrush="#444444" BorderThickness="1,0,1,1" CornerRadius="0,0,10,10">
+        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="10,5,10,19" Background="Black" BorderBrush="#444444" BorderThickness="1,1,1,1" CornerRadius="10">
             <Border.Resources>
                 <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="Transparent"/>
@@ -94,7 +94,7 @@
                 <Grid.OpacityMask>
                     <VisualBrush Visual="{Binding ElementName=mainWindowB}" />
                 </Grid.OpacityMask>
-                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="0,0,10,10"/>
+                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="10,10,10,10"/>
                 <Grid x:Name="gradientBG" ClipToBounds="True">
                     <Image VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-30" Stretch="UniformToFill">
                         <Image.Effect>

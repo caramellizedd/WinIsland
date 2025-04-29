@@ -28,6 +28,45 @@ namespace WinIsland
             int buildNumber = Int32.Parse(buildNumberString);
             return buildNumber > 22000 ? true : false;
         }
+        public static double GetDpiScale(Window handle)
+        {
+            var hwnd = new WindowInteropHelper(handle).Handle;
+            var source = HwndSource.FromHwnd(hwnd);
+            if (source?.CompositionTarget != null)
+            {
+                return source.CompositionTarget.TransformToDevice.M11; // X axis DPI scale
+            }
+            return 1.0; // Default scale
+        }
+        // useAcrylic only affects Windows 10 or 11 21H1
+        public static void EnableBlur(Window window, bool useAcrylic = true)
+        {
+            // TODO: Add Support for Windows 11 Modern Acrylic or Mica
+            // Render as transparent background for now
+            if (isWindows11()) return; 
+            var windowHelper = new WindowInteropHelper(window);
+
+            var accent = new AccentPolicy();
+            if (useAcrylic)
+                accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND;
+            else
+                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
+            accent.GradientColor = (0 << 24) | (0x990000 & 0xFFFFFF);
+
+            var accentStructSize = Marshal.SizeOf(accent);
+
+            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr(accent, accentPtr, false);
+
+            var data = new WindowCompositionAttributeData();
+            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            data.SizeOfData = accentStructSize;
+            data.Data = accentPtr;
+
+            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
+
+            Marshal.FreeHGlobal(accentPtr);
+        }
         // Color format: ABGR (DO NOT SPECIFY ALPHA VALUE)
         public static void setBorderColor(Window window, System.Windows.Media.Color rgb, int hexColor = 0x000000FF, Border w10Border = null)
         {

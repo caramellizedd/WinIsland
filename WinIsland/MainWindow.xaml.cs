@@ -20,6 +20,7 @@ using Button = System.Windows.Controls.Button;
 using MessageBox = System.Windows.MessageBox;
 using NAudio.CoreAudioApi;
 using Timer = System.Timers.Timer;
+using System.Runtime.InteropServices;
 
 namespace WinIsland
 {
@@ -504,7 +505,7 @@ namespace WinIsland
             DoubleAnimation moveUpAnimation = new DoubleAnimation
             {
                 From = currentY,
-                To = -50,
+                To = -60,
                 Duration = TimeSpan.FromSeconds(animDurationGlobal),
                 EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseInOut }
             };
@@ -599,6 +600,7 @@ namespace WinIsland
         private async void AnimateWindowSize(int width, int height, int left, bool easeoutback = true, double bounceRadius = 2)
         {
             isAnimating = true;
+            double dpiScale = Helper.GetDpiScale(this);
             ThicknessAnimation ta;
             if (isExpanded)
             {
@@ -668,9 +670,13 @@ namespace WinIsland
             var stopwatch = Stopwatch.StartNew();
 
             int duration = ((int)(animDurationGlobal*1000))+100;
-            int startWidth = (int)this.Width;
-            int startHeight = (int)this.Height;
-            int startLeft = (int)this.Left;
+            int startWidth = (int)(this.Width * dpiScale);
+            int startHeight = (int)(this.Height * dpiScale);
+            int startLeft = (int)(this.Left * dpiScale);
+
+            int targetWidth = (int)(width * dpiScale);
+            int targetHeight = (int)(height * dpiScale);
+            int targetLeft = (int)(left * dpiScale);
             int delay = 0; // Delay between steps (ms)
 
             islandContent.BeginAnimation(Grid.OpacityProperty, resetOpacity);
@@ -698,13 +704,14 @@ namespace WinIsland
                 }
 
 
-                double newWidth = (startWidth + (width - startWidth) * easeT);
-                double newHeight = (startHeight + (height - startHeight) * easeT);
-                double newLeft = (startLeft + (left - startLeft) * easeT);
+                double newWidth = startWidth + (targetWidth - startWidth) * easeT;
+                double newHeight = startHeight + (targetHeight - startHeight) * easeT;
+                double newLeft = startLeft + (targetLeft - startLeft) * easeT;
 
                 SetWindowPos(hwnd, IntPtr.Zero, (int)Math.Round(newLeft), 0, (int)Math.Round(newWidth), (int)Math.Round(newHeight), SWP_NOZORDER | SWP_NOACTIVATE);
                 await Task.Delay(delay);
             }
+            SetWindowPos(hwnd, IntPtr.Zero, targetLeft, 0, targetWidth, targetHeight, SWP_NOZORDER | SWP_NOACTIVATE);
             if (settings.blurEverywhere)
             {
                 mainContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnimDim);
@@ -766,7 +773,7 @@ namespace WinIsland
             Topmost = false;
             Topmost = true;
             ignoreMouseEvent = true;
-            AnimateWindowSize(852, 350, (int)firstPos - 255);
+            AnimateWindowSize(872, 360, (int)firstPos - 255);
             new Thread(() =>
             {
                 while (isAnimating) ;
@@ -788,7 +795,7 @@ namespace WinIsland
             thumbnailGlow.Visibility = Visibility.Collapsed;
             islandMini.Visibility = Visibility.Visible;
             ignoreMouseEvent = false;
-            AnimateWindowSize(341, 61, (int)firstPos, true, 1);
+            AnimateWindowSize(351, 71, (int)firstPos, true, 1);
         }
         private void afterForward_Click(object sender, RoutedEventArgs e)
         {
@@ -837,6 +844,24 @@ namespace WinIsland
                 sysEventTimer.Start();
                 //triggerSystemEvent(0, volumeSlider.Value);
             }
+        }
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+            HwndSource source = (HwndSource)PresentationSource.FromVisual(this);
+            source.AddHook(WndProc);
+        }
+        private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            // This does not work yet. Might try to fix later.
+            const int WM_DPICHANGED = 0x02E0;
+
+            if (msg == WM_DPICHANGED)
+            {
+                MessageBox.Show("We have noticed that you changed your DPI.\nPlease restart WinIsland to fix the blur or the island not in center top.", "Blurred UI-DPI Changed", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+
+            return IntPtr.Zero;
         }
     }
 }

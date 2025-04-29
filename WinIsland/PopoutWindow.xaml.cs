@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.RightsManagement;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
@@ -32,7 +34,7 @@ namespace WinIsland
             this.Close();
         }
 
-        private void maxRestoreButton_Click(object sender, RoutedEventArgs e)
+        /**private void maxRestoreButton_Click(object sender, RoutedEventArgs e)
         {
             if(WindowState == WindowState.Maximized)
             {
@@ -46,7 +48,7 @@ namespace WinIsland
                 maxRestoreButton.Content = "\xE923";
                 WindowState = WindowState.Maximized;
             }
-        }
+        }**/
 
         private void minimizeButton_Click(object sender, RoutedEventArgs e)
         {
@@ -60,10 +62,23 @@ namespace WinIsland
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
+            
+            Helper.EnableBlur(this);
+            //bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
+            mainWindowGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x11, Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));
             Helper.setBorderColor(this, Settings.instance.borderColor, Helper.ConvertToABGR(Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B), windowBorder);
         }
-
+        public static bool WindowBorderlessDropShadow(IntPtr hWnd, int ShadowSize)
+        {
+            //0, ShadowSize, 0, ShadowSize
+            PInvoke.MARGINS Margins = new PInvoke.MARGINS();
+            Margins.Left = 0;
+            Margins.Right = ShadowSize;
+            Margins.Top = 0;
+            Margins.Bottom = ShadowSize;
+            int result = PInvoke.DwmExtendFrameIntoClientArea(hWnd, ref Margins);
+            return result == 0;
+        }
         private void contentFrame_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
         {
             DoubleAnimation ta = new DoubleAnimation
@@ -83,36 +98,22 @@ namespace WinIsland
         private void changeTitle(string title)
         {
             windowTitle.Content = title;
-            DoubleAnimation sa = new DoubleAnimation
-            {
-                From = -100,
-                To = 0,
-                Duration = new TimeSpan(0, 0, 0, 0, 300),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-            };
+            this.Title = title;
             DoubleAnimation sa1 = new DoubleAnimation
             {
-                From = -100,
+                From = Width,
                 To = 0,
-                Duration = new TimeSpan(0, 0, 0, 0, 300),
+                Duration = new TimeSpan(0, 0, 0, 0, 500),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
-            windowTitleTransform.BeginAnimation(TranslateTransform.YProperty, sa);
             windowTitleTransform.BeginAnimation(TranslateTransform.XProperty, sa1);
         }
         public void Navigate(object content)
         {
-            DoubleAnimation sa = new DoubleAnimation
-            {
-                From = 0,
-                To = 100,
-                Duration = new TimeSpan(0, 0, 0, 0, 300),
-                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
-            };
             DoubleAnimation sa1 = new DoubleAnimation
             {
                 From = 0,
-                To = -100,
+                To = -300,
                 Duration = new TimeSpan(0, 0, 0, 0, 300),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
             };
@@ -129,14 +130,13 @@ namespace WinIsland
             {
                 contentFrame.Navigate(content);
             };
-            windowTitleTransform.BeginAnimation(TranslateTransform.YProperty, sa);
             windowTitleTransform.BeginAnimation(TranslateTransform.XProperty, sa1);
             frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
 
         }
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            if (WindowState == WindowState.Maximized)
+            /**if (WindowState == WindowState.Maximized)
             {
                 mainWindowGrid.Margin = new Thickness(7);
                 maxRestoreButton.Content = "\xE923";
@@ -145,7 +145,7 @@ namespace WinIsland
             {
                 mainWindowGrid.Margin = new Thickness(0);
                 maxRestoreButton.Content = "\xE922";
-            }
+            }**/
         }
 
         private void closeButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)
@@ -167,6 +167,12 @@ namespace WinIsland
         {
             if(main.IsSelected) Navigate(new SettingsPage());
             if(advanced.IsSelected) Navigate(new AdvancedSettingsPage());
+        }
+
+        private void Window_StateChanged(object sender, EventArgs e)
+        {
+            if (WindowState == WindowState.Maximized)
+                WindowState = WindowState.Normal;
         }
     }
 }

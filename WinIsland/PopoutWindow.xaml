@@ -5,11 +5,14 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinIsland"
         mc:Ignorable="d"
-        Background="Black"
+        Background="#66000000"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
         MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen"
+        AllowsTransparency="True"
+        WindowStyle="None"
+        StateChanged="Window_StateChanged"
         Title="PopoutWindow" Height="600" Width="800">
     <Window.Resources>
         <SolidColorBrush x:Key="TabItem.Selected.Background" Color="#33444444"/>
@@ -78,9 +81,6 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="32"/>
-    </WindowChrome.WindowChrome>
     <Grid x:Name="mainWindowGrid" WindowChrome.IsHitTestVisibleInChrome="True">
         <Grid.Resources>
             <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
@@ -215,7 +215,7 @@
                 <Grid x:Name="titleBar" Height="32" VerticalAlignment="Top" Background="#00000000" MouseDown="titleBar_MouseDown">
                     <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
                         <Button x:Name="closeButton" MouseLeave="closeButton_MouseLeave" MouseDown="closeButton_MouseDown" MouseEnter="closeButton_MouseEnter"  Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xE8bb;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="closeButton_Click"/>
-                        <Button x:Name="maxRestoreButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe922;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="maxRestoreButton_Click"/>
+                        
                         <Button x:Name="minimizeButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe921;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="minimizeButton_Click"/>
                     </StackPanel>
                 </Grid>

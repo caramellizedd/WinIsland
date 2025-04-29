@@ -13,10 +13,11 @@
         ResizeMode="NoResize"
         Activated="Window_Activated"
         Deactivated="Window_Deactivated"
-        Title="WinIslandOwO234" Height="61" Width="341">
+        UseLayoutRounding="True"
+        Title="WinIslandOwO234" Height="71" Width="351">
 
     <Grid x:Name="windowContent">
-        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="10,5,10,19" Background="Black" BorderBrush="#444444" BorderThickness="1,1,1,1" CornerRadius="10">
+        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="20,5,20,29" Background="Black" BorderBrush="#444444" BorderThickness="1,1,1,1" CornerRadius="10">
             <Border.Resources>
                 <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="Transparent"/>
@@ -88,7 +89,7 @@
                 <TranslateTransform x:Name="WindowTransform" />
             </Border.RenderTransform>
             <Border.Effect>
-                <DropShadowEffect x:Name="dropShadowEffect" BlurRadius="10" Color="Black" Direction="-90" ShadowDepth="7" Opacity="0.8"/>
+                <DropShadowEffect x:Name="dropShadowEffect" BlurRadius="20" Color="Black" Direction="-90" ShadowDepth="7" Opacity="0.8"/>
             </Border.Effect>
             <Grid x:Name="mainContent">
                 <Grid.OpacityMask>

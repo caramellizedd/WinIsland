@@ -364,6 +364,28 @@ namespace WinIsland
             else
                 setBatteryPercentage((int)(p.BatteryLifePercent * 100));
 
+            if(sessionManager != null)
+            {
+                try
+                {
+                    if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                    {
+                        playPause.Content = "\xE102";
+                        playPause2.Content = "\xE102";
+                    }
+                    else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                    {
+                        playPause.Content = "\xE769";
+                        playPause2.Content = "\xE769";
+                    }
+                }
+                catch(NullReferenceException nfe)
+                {
+                    playPause.Content = "\xE102";
+                    playPause2.Content = "\xE102";
+                }
+            }
+
         }
         // TODO: Move this to Utils.cs with the function returning a string
         private void setBatteryPercentage(int percentage, bool isCharging = false)
@@ -773,7 +795,7 @@ namespace WinIsland
             Topmost = false;
             Topmost = true;
             ignoreMouseEvent = true;
-            AnimateWindowSize(872, 360, (int)firstPos - 255);
+            AnimateWindowSize(872, 370, (int)firstPos - 255);
             new Thread(() =>
             {
                 while (isAnimating) ;

@@ -5,13 +5,12 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WinIsland"
         mc:Ignorable="d"
-        Background="#66000000"
+        ResizeMode="NoResize"
+        Background="#AA000000"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
         MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen"
-        AllowsTransparency="True"
-        WindowStyle="None"
         StateChanged="Window_StateChanged"
         Title="PopoutWindow" Height="600" Width="800">
     <Window.Resources>
@@ -81,7 +80,10 @@
             </Setter>
         </Style>
     </Window.Resources>
-    <Grid x:Name="mainWindowGrid" WindowChrome.IsHitTestVisibleInChrome="True">
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" GlassFrameThickness="-1" ResizeBorderThickness="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+    <Grid Background="Transparent" x:Name="mainWindowGrid" WindowChrome.IsHitTestVisibleInChrome="True">
         <Grid.Resources>
             <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
                 <Setter Property="Background" Value="Transparent"/>

@@ -81,8 +81,10 @@ namespace WinIsland
         {
             DWMWA_NCRENDERING_ENABLED = 1,
             DWMWA_NCRENDERING_POLICY,
+            DWMWA_USE_IMMERSIVE_DARK_MODE = 20,
             DWMWA_WINDOW_CORNER_PREFERENCE = 33,
-            DWMWA_BORDER_COLOR = 34
+            DWMWA_BORDER_COLOR = 34,
+            DWMWA_SYSTEMBACKDROP_TYPE = 38
         }
         public enum DWMNCRENDERINGPOLICY
         {
@@ -106,17 +108,36 @@ namespace WinIsland
             DWMWCP_ROUND = 2,
             DWMWCP_ROUNDSMALL = 3
         }
+        [Flags]
+        public enum DWM_SYSTEMBACKDROP_TYPE : int
+        {
+            DWMSBT_AUTO = 0,
+            DWMSBT_NONE = 1,
+            DWMSBT_MAINWINDOW = 2, // Mica
+            DWMSBT_TRANSIENTWINDOW = 3, // Acrylic
+            DWMSBT_TABBEDWINDOW = 4 // Tabbed
+        }
         // WHY IS THERE A TON OF THESE HEEELPPPP
+        [DllImport("DwmApi.dll")]
+        public static extern int DwmExtendFrameIntoClientArea(
+            IntPtr hwnd,
+            ref MARGINS pMarInset);
+
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, ref int pvAttribute, int cbAttribute);
+        [DllImport("dwmapi.dll")]
+        public static extern int DwmSetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, ref DWM_SYSTEMBACKDROP_TYPE pvAttribute, int cbAttribute);
+        public static int ExtendFrame(IntPtr hwnd, MARGINS margins)
+            => DwmExtendFrameIntoClientArea(hwnd, ref margins);
+        public static int SetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, int parameter)
+            => DwmSetWindowAttribute(hwnd, attribute, ref parameter, Marshal.SizeOf<int>());
+        public static int SetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE attribute, DWM_SYSTEMBACKDROP_TYPE parameter)
+            => DwmSetWindowAttribute(hwnd, attribute, ref parameter, Marshal.SizeOf<int>());
         [DllImport("dwmapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern void DwmSetWindowAttribute(IntPtr hwnd,
+        public static extern void DwmSetWindowAttribute(IntPtr hwnd,
                                                          DWMWINDOWATTRIBUTE attribute,
                                                          ref DWM_WINDOW_CORNER_PREFERENCE pvAttribute,
                                                          uint cbAttribute);
-        [DllImport("dwmapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
-        internal static extern void DwmSetWindowAttribute(IntPtr hwnd,
-                                                         DWMWINDOWATTRIBUTE attribute,
-                                                         ref int pvAttribute,
-                                                         int cbAttribute);
         [DllImport("dwmapi.dll", CallingConvention = CallingConvention.Winapi, SetLastError = true)]
         public static extern int DwmGetWindowAttribute(IntPtr hwnd, DWMWINDOWATTRIBUTE dwAttribute, ref DWMNCRENDERINGPOLICY pvAttribute,
         int cbAttribute);
@@ -127,8 +148,6 @@ namespace WinIsland
 
         [DllImport("dwmapi.dll")]
         public static extern int DwmSetWindowAttribute(IntPtr hwnd, int dwAttribute, ref int pvAttribute, int cbAttribute);
-        [DllImport("dwmapi.dll")]
-        public static extern int DwmExtendFrameIntoClientArea(IntPtr hWnd, ref MARGINS pMargins);
 
         [DllImport("user32.dll")]
         public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);

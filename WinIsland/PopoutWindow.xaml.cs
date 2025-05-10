@@ -17,6 +17,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Windows.UI.Core.AnimationMetrics;
 using WinIsland.PopoutPages;
+using static WinIsland.PInvoke;
 
 namespace WinIsland
 {
@@ -57,12 +58,14 @@ namespace WinIsland
 
         private void titleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
-            if (e.LeftButton == MouseButtonState.Pressed) DragMove();
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                DragMove();
+            }
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
-            
             Helper.EnableBlur(this);
             //bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
             mainWindowGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x11, Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));

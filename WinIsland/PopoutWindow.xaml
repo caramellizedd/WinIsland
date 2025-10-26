@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:WinIsland"
         mc:Ignorable="d"
         ResizeMode="NoResize"
-        Background="#AA000000"
+        Background="#33000000"
         Loaded="Window_Loaded"
         SizeChanged="Window_SizeChanged"
         MinHeight="600" MinWidth="800"

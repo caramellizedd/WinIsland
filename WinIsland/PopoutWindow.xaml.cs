@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.RightsManagement;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using Windows.UI.Core.AnimationMetrics;
 using WinIsland.PopoutPages;
 using static WinIsland.PInvoke;
 
@@ -66,21 +54,12 @@ namespace WinIsland
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            var hwnd = new WindowInteropHelper(this).Handle;
+            SetWindowLong(hwnd, PInvoke.GWL_STYLE, GetWindowLong(hwnd, PInvoke.GWL_STYLE) & ~PInvoke.WS_SYSMENU);
             Helper.EnableBlur(this);
             //bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
-            mainWindowGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x11, Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));
+            //mainWindowGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x11, Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));
             Helper.setBorderColor(this, Settings.instance.borderColor, Helper.ConvertToABGR(Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B), windowBorder);
-        }
-        public static bool WindowBorderlessDropShadow(IntPtr hWnd, int ShadowSize)
-        {
-            //0, ShadowSize, 0, ShadowSize
-            PInvoke.MARGINS Margins = new PInvoke.MARGINS();
-            Margins.Left = 0;
-            Margins.Right = ShadowSize;
-            Margins.Top = 0;
-            Margins.Bottom = ShadowSize;
-            int result = PInvoke.DwmExtendFrameIntoClientArea(hWnd, ref Margins);
-            return result == 0;
         }
         private void contentFrame_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
         {

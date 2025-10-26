@@ -15,6 +15,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Windows.Storage.Streams;
 using static WinIsland.PInvoke;
+using Color = System.Windows.Media.Color;
 using PixelFormat = System.Drawing.Imaging.PixelFormat;
 using Point = System.Drawing.Point;
 
@@ -62,37 +63,35 @@ namespace WinIsland
                 new WindowInteropHelper(window).Handle,
                 DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
                 1);
-            // TODO: Fix Windows 10 Support.
+            // TODO: Fix Acrylic Blur for Windows 10.
 
             if (isWindows11())
             {
                 SetWindowAttribute(
                     new WindowInteropHelper(window).Handle,
                     DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
-                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_NONE);
+                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW);
                 return;
             }
+            // Acrylic doesn't work. It's stuck on Aero for now. (Win10 Only)
+            HwndSource mainWindowSrc = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
+            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0xCC, 0, 0, 0);
+            window.Background = new SolidColorBrush(Color.FromArgb(0x99, 0, 0, 0));
             var windowHelper = new WindowInteropHelper(window);
 
-            var accent = new AccentPolicy();
-            if (useAcrylic)
-                accent.AccentState = AccentState.ACCENT_ENABLE_ACRYLICBLURBEHIND;
-            else
-                accent.AccentState = AccentState.ACCENT_ENABLE_BLURBEHIND;
-            accent.GradientColor = (0 << 24) | (0x990000 & 0xFFFFFF);
-
-            var accentStructSize = Marshal.SizeOf(accent);
-
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
-
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
+            PInvoke.AccentPolicy accent = new PInvoke.AccentPolicy
+            {
+                AccentState = PInvoke.AccentState.ACCENT_ENABLE_BLURBEHIND
+            };
+            accent.GradientColor = (0x99000000);
+            int accentStructSize = Marshal.SizeOf<PInvoke.AccentPolicy>(accent);
+            IntPtr accentPtr = Marshal.AllocHGlobal(accentStructSize);
+            Marshal.StructureToPtr<PInvoke.AccentPolicy>(accent, accentPtr, false);
+            PInvoke.WindowCompositionAttributeData data = default(PInvoke.WindowCompositionAttributeData);
+            data.Attribute = PInvoke.WindowCompositionAttribute.WCA_ACCENT_POLICY;
             data.SizeOfData = accentStructSize;
             data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
-
+            PInvoke.SetWindowCompositionAttribute(windowHelper.Handle, ref data);
             Marshal.FreeHGlobal(accentPtr);
         }
         public static void DisableBlur(Window window)

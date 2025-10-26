@@ -59,7 +59,7 @@ namespace WinIsland
         {
             public AccentState AccentState;
             public int AccentFlags;
-            public int GradientColor;
+            public uint GradientColor;
             public int AnimationId;
         }
 
@@ -118,6 +118,8 @@ namespace WinIsland
             DWMSBT_TABBEDWINDOW = 4 // Tabbed
         }
         // WHY IS THERE A TON OF THESE HEEELPPPP
+        public const int GWL_STYLE = -16;
+        public const int WS_SYSMENU = 0x80000;
         [DllImport("DwmApi.dll")]
         public static extern int DwmExtendFrameIntoClientArea(
             IntPtr hwnd,

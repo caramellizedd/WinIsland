@@ -1,5 +1,8 @@
-﻿using System.Diagnostics;
+﻿using NAudio.CoreAudioApi;
+using NAudio.Gui;
+using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,15 +15,13 @@ using System.Windows.Threading;
 using Windows.Media.Control;
 using static WinIsland.PInvoke;
 using Application = System.Windows.Application;
+using Button = System.Windows.Controls.Button;
 using Color = System.Windows.Media.Color;
 using Grid = System.Windows.Controls.Grid;
-using Point = System.Windows.Point;
 using Label = System.Windows.Controls.Label;
-using Button = System.Windows.Controls.Button;
 using MessageBox = System.Windows.MessageBox;
-using NAudio.CoreAudioApi;
+using Point = System.Windows.Point;
 using Timer = System.Timers.Timer;
-using System.Runtime.InteropServices;
 
 namespace WinIsland
 {
@@ -53,25 +54,34 @@ namespace WinIsland
         bool mediaSessionIsNull = false;
         // Media Player
         // Long ass name, like what the fuck? who made this shit, couldn't you just name it like GSMTC?
-        private GlobalSystemMediaTransportControlsSessionManager? sessionManager; // For getting the current media session
-        private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties; // For getting media player properties (music name, thumbnail, player state etc)
+        public GlobalSystemMediaTransportControlsSessionManager? sessionManager; // For getting the current media session
+        public GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties; // For getting media player properties (music name, thumbnail, player state etc)
         // Volume Controls
         private static MMDeviceEnumerator enumer = new MMDeviceEnumerator();
         private MMDevice dev = enumer.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
         // Settings
         Settings settings = new Settings();
 
+        public static MainWindow instance;
+
         public MainWindow()
         {
+            instance = this;
             InitializeComponent();
+
+            // Fixed volume changing to 30 every time the island starts up
+            volumeSlider.Value = (double)dev.AudioEndpointVolume.MasterVolumeLevelScalar;
+            volumeSlider.ValueChanged += volumeSlider_ValueChanged;
+
             StartMouseTracking();
-            getMediaSession();
+            initPages();
             toggleMediaControls(false);
             settingsButton.IsEnabled = false;
             settingsButton.Opacity = 0;
             setupEvents();
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
+            islandContent.Visibility = Visibility.Collapsed;
         }
         Timer sysEventTimer = new Timer();
         private void setupEvents()
@@ -114,6 +124,11 @@ namespace WinIsland
                     systemEventSmall.BeginAnimation(Grid.OpacityProperty, hideEvent);
                 }));
             };
+        }
+        private void initPages()
+        {
+            // Load default pages
+            islandContent.Navigate(new MusPlayer());
         }
         private void triggerSystemEvent(int id, double volume = 0)
         {
@@ -158,166 +173,7 @@ namespace WinIsland
                     break;
             }
         }
-        private async void getMediaSession()
-        {
-            sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-            if (sessionManager == null) {
-                mediaSessionIsNull = true;
-                waitForMedia.Interval = new TimeSpan(0,0,1);
-                waitForMedia.Tick += new EventHandler(async delegate (Object o, EventArgs a){
-                    Console.WriteLine("MediaSession is null!\nAttempting to look for one...");
-                    if(mediaSessionIsNull != null)
-                    {
-                        waitForMedia.Stop();
-                        return;
-                    }
-                    sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                    if (sessionManager == null) return;
-                    sessionManager.SessionsChanged += SessionManager_SessionsChanged;
-                    sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
-                    sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
-                    sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
-                    sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
-                    mediaSessionIsNull = false;
-                    var songInfo = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
-                    if (songInfo == null) return;
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        songTitle.Content = songInfo.Title;
-                        songArtist.Content = songInfo.Artist;
-                        songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                        if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                            renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                        toggleMediaControls(true);
-                    });
-                });
-                return;
-            }
-            try
-            {
-                sessionManager.SessionsChanged += SessionManager_SessionsChanged;
-                sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
-                sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
-                sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
-                sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
-                mediaSessionIsNull = false;
-                var songInfo = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
-                if (songInfo == null) return;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    songTitle.Content = songInfo.Title;
-                    songArtist.Content = songInfo.Artist;
-                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                        renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                    toggleMediaControls(true);
-                });
-            }
-            catch(NullReferenceException nfe)
-            {
-                // it happens, dont ask how.
-                toggleMediaControls(false);
-                mediaSessionIsNull = true;
-                getMediaSession();
-            }
-            
-        }
-
-        private async void MainWindow_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
-        {
-            Console.WriteLine("MainWindow_TimelinePropertiesChanged Event Called");
-            var songInfo = await sender.TryGetMediaPropertiesAsync();
-            if (songInfo == null) return;
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                songTitle.Content = songInfo.Title;
-                songArtist.Content = songInfo.Artist;
-                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                toggleMediaControls(true);
-            });
-        }
-        private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
-        {
-            Console.WriteLine("MainWindow_MediaPropertiesChanged Event Called");
-            var songInfo = await sender.TryGetMediaPropertiesAsync();
-            if (songInfo == null) return;
-            Application.Current.Dispatcher.Invoke(() =>
-            {
-                songTitle.Content = songInfo.Title;
-                songArtist.Content = songInfo.Artist;
-                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                    renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                toggleMediaControls(true);
-            });
-        }
-
-        private async void MainWindow_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
-        {
-            Console.WriteLine("MainWindow_PlaybackInfoChanged Event Called");
-            try
-            {
-                var songInfo = await sender.TryGetMediaPropertiesAsync();
-                if (songInfo == null) return;
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    songTitle.Content = songInfo.Title;
-                    songArtist.Content = songInfo.Artist;
-                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                        renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                    toggleMediaControls(true);
-                });
-            }
-            catch
-            {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    songTitle.Content = "No media playing.";
-                    songArtist.Content = "WinIsland by Charamellized.";
-                    songThumbnail.Source = null;
-                    toggleMediaControls(false);
-                });
-            }
-            
-        }
-
-        private async void SessionManager_CurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)
-        {
-            try
-            {
-                mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
-                toggleMediaControls(true, true);
-            }
-            catch (NullReferenceException nfe)
-            {
-                toggleMediaControls(false);
-                mediaSessionIsNull = true;
-                getMediaSession();
-            }
-        }
-
-        private async void SessionManager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
-        {
-            try
-            {
-                mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
-                toggleMediaControls(true, true);
-            }
-            catch(NullReferenceException nfe)
-            {
-                toggleMediaControls(false);
-                mediaSessionIsNull = true;
-                getMediaSession();
-            }
-            catch 
-            {
-                // COM Crash fuck off
-            }
-        }
-        private void renderGradient(Bitmap bmp)
+        public void renderGradient(Bitmap bmp)
         {
             LinearGradientBrush gradientBrush = new LinearGradientBrush(Helper.CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
             LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
@@ -370,18 +226,18 @@ namespace WinIsland
                 {
                     if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
                     {
-                        playPause.Content = "\xE102";
+                        //playPause.Content = "\xE102";
                         playPause2.Content = "\xE102";
                     }
                     else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
                     {
-                        playPause.Content = "\xE769";
+                        //playPause.Content = "\xE769";
                         playPause2.Content = "\xE769";
                     }
                 }
                 catch(NullReferenceException nfe)
                 {
-                    playPause.Content = "\xE102";
+                    //playPause.Content = "\xE102";
                     playPause2.Content = "\xE102";
                 }
             }
@@ -476,7 +332,7 @@ namespace WinIsland
             //bg.Visibility = Visibility.Collapsed;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
-            thumbnailGlow.Visibility = Visibility.Collapsed;
+            //thumbnailGlow.Visibility = Visibility.Collapsed;
             double currentY = -40.0D;
             WindowTransform.BeginAnimation(TranslateTransform.YProperty, null);
             WindowTransform.Y = currentY;
@@ -774,19 +630,18 @@ namespace WinIsland
                 Console.WriteLine($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
                 if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
                 {
-                    playPause.Content = "\xE769";
+                    //playPause.Content = "\xE769";
                     playPause2.Content = "\xE769";
                 }
                 else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
                 {
-                    playPause.Content = "\xE102";
+                    //playPause.Content = "\xE102";
                     playPause2.Content = "\xE102";
                 }
             }catch(NullReferenceException nfe)
             {
                 toggleMediaControls(false);
                 mediaSessionIsNull = true;
-                getMediaSession();
             }
         }
         private void expandIsland()
@@ -803,8 +658,8 @@ namespace WinIsland
                 {
                     //bg.Visibility = Visibility.Visible;
                     gridBG.Visibility = Visibility.Visible;
+                    islandContent.Visibility = Visibility.Visible;
                     gridBG2.Visibility = Visibility.Visible;
-                    thumbnailGlow.Visibility = Visibility.Visible;
                     islandMini.Visibility = Visibility.Collapsed;
                 });
             }).Start();
@@ -814,7 +669,7 @@ namespace WinIsland
             isExpanded = false;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
-            thumbnailGlow.Visibility = Visibility.Collapsed;
+            islandContent.Visibility = Visibility.Collapsed;
             islandMini.Visibility = Visibility.Visible;
             ignoreMouseEvent = false;
             AnimateWindowSize(351, 71, (int)firstPos, true, 1);
@@ -824,28 +679,25 @@ namespace WinIsland
             //currentSession.ControlSession.TrySkipNextAsync();
             sessionManager.GetCurrentSession().TrySkipNextAsync();
         }
+        public bool mediaControl = false;
         public void toggleMediaControls(bool value, bool inAnotherThread = true)
         {
             if (inAnotherThread)
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
-                    beforeRewind.IsEnabled = value;
-                    playPause.IsEnabled = value;
-                    afterForward.IsEnabled = value;
                     beforeRewind2.IsEnabled = value;
                     playPause2.IsEnabled = value;
                     afterForward2.IsEnabled = value;
+                    mediaControl = value;
                 });
             }
             else
             {
-                beforeRewind.IsEnabled = value;
-                playPause.IsEnabled = value;
-                afterForward.IsEnabled = value;
                 beforeRewind2.IsEnabled = value;
                 playPause2.IsEnabled = value;
                 afterForward2.IsEnabled = value;
+                mediaControl = value;
             }
         }
 
@@ -856,7 +708,7 @@ namespace WinIsland
         }
         private void volumeSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
-            if(ignoreVolumeEvent2.ElapsedMilliseconds >= 300 || !ignoreVolumeEvent2.IsRunning)
+            if( ignoreVolumeEvent2.ElapsedMilliseconds >= 300 || !ignoreVolumeEvent2.IsRunning)
             {
                 if (!ignoreVolumeEvent.IsRunning)
                     ignoreVolumeEvent.Start();

@@ -118,31 +118,13 @@
                 </Grid>
                 <Grid x:Name="systemEventSmall" VerticalAlignment="Top" Margin="10,0,10,0">
                     <Label Margin="5,0,0,0" Content="Volume : " FontFamily="Segoe UI" FontSize="16" Foreground="White"/>
-                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="80,4,30,0" Value="0.3" ValueChanged="volumeSlider_ValueChanged"/>
+                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="80,4,30,0" Value="0.3"/>
                 </Grid>
                 <!--Settings Button-->
                 <Button x:Name="settingsButton" Click="settingsButton_Click" Content="&#xE713;" Height="24" Width="24" Margin="0,5,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                 <!--Main Content-->
-                <Grid x:Name="islandContent">
-                    <Grid x:Name="thumbnailGlow" MaxWidth="200" MaxHeight="200" Margin="50,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
-                        <Rectangle>
-                            <Rectangle.Effect>
-                                <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
-                            </Rectangle.Effect>
-                            <Rectangle.Fill>
-                                <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
-                            </Rectangle.Fill>
-                        </Rectangle>
-                        <Image x:Name="songThumbnail" Stretch="Uniform"/>
-                    </Grid>
-                    <Label x:Name="songTitle" Content="No song playing" Foreground="White" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
-                    <Label x:Name="songArtist" Content="WinIsland by Charamellized" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
-                    <StackPanel Margin="394,216,266,0" Orientation="Horizontal">
-                        <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
-                        <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
-                        <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
-                    </StackPanel>
-                </Grid>
+                <Frame x:Name="islandContent" NavigationUIVisibility="Hidden">
+                </Frame>
             </Grid>
         </Border>
     </Grid>

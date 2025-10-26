@@ -15,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Windows.Storage.Streams;
 using static WinIsland.PInvoke;
+using PixelFormat = System.Drawing.Imaging.PixelFormat;
+using Point = System.Drawing.Point;
 
 namespace WinIsland
 {
@@ -262,14 +264,30 @@ namespace WinIsland
         }
         public static BitmapImage ConvertToImageSource(Bitmap src)
         {
-            MemoryStream ms = new MemoryStream();
-            ((System.Drawing.Bitmap)src).Save(ms, System.Drawing.Imaging.ImageFormat.Bmp);
-            BitmapImage image = new BitmapImage();
-            image.BeginInit();
-            ms.Seek(0, SeekOrigin.Begin);
-            image.StreamSource = ms;
-            image.EndInit();
-            return image;
+            // Fix for crash on certain images.
+            // Clone into a new 32bpp ARGB bitmap (safe for encoding)
+            using (var safeBitmap = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb))
+            {
+                using (var g = Graphics.FromImage(safeBitmap))
+                {
+                    g.DrawImage(src, 0, 0, src.Width, src.Height);
+                }
+
+                using (var memory = new MemoryStream())
+                {
+                    safeBitmap.Save(memory, ImageFormat.Png);
+                    memory.Position = 0;
+
+                    var bitmapImage = new BitmapImage();
+                    bitmapImage.BeginInit();
+                    bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmapImage.StreamSource = memory;
+                    bitmapImage.EndInit();
+                    bitmapImage.Freeze();
+                    return bitmapImage;
+                }
+            }
         }
+
     }
 }

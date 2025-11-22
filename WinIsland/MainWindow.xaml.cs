@@ -519,21 +519,9 @@ namespace WinIsland
                     To = 0.0,
                     Duration = TimeSpan.FromSeconds(0)
                 };
-            DoubleAnimation resetOpacityDim = new DoubleAnimation
-            {
-                From = 1,
-                To = 0.3,
-                Duration = TimeSpan.FromSeconds(animDurationGlobal/2)
-            };
             DoubleAnimation opacityShowAnim = new DoubleAnimation
             {
                 From = 0.0,
-                To = 1,
-                Duration = TimeSpan.FromSeconds(animDurationGlobal)
-            };
-            DoubleAnimation opacityShowAnimDim = new DoubleAnimation
-            {
-                From = 0.3,
                 To = 1,
                 Duration = TimeSpan.FromSeconds(animDurationGlobal)
             };
@@ -563,7 +551,6 @@ namespace WinIsland
             settingsButton.BeginAnimation(Button.OpacityProperty, resetOpacity);
             if (settings.blurEverywhere)
             {
-                mainContent.BeginAnimation(Grid.OpacityProperty, resetOpacityDim);
                 be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
                 be2.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
             }
@@ -590,10 +577,6 @@ namespace WinIsland
                 await Task.Delay(delay);
             }
             SetWindowPos(hwnd, IntPtr.Zero, targetLeft, 0, targetWidth, targetHeight, SWP_NOZORDER | SWP_NOACTIVATE);
-            if (settings.blurEverywhere)
-            {
-                mainContent.BeginAnimation(Grid.OpacityProperty, opacityShowAnimDim);
-            }
             if (isExpanded)
             {
                 settingsButton.BeginAnimation(Button.OpacityProperty, opacityShowAnim);

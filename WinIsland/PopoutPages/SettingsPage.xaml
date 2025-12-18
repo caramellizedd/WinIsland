@@ -9,6 +9,13 @@
       d:DesignHeight="466" d:DesignWidth="800"
       Title="Main Settings">
     <Grid>
-        <CheckBox x:Name="blurEverywhere" Content="- Enable blur in Content Transition." Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Click="blurEverywhere_Click"/>
-    </Grid>
+		<StackPanel Margin="10" Width="300" HorizontalAlignment="Left" VerticalAlignment="Top">
+			<StackPanel Orientation="Horizontal">
+				<Label Content="Ambient Background Blur Radius" Foreground="White"/>
+				<Label Content="0px (Def: 40p)" Foreground="White" x:Name="abbrValueLabel"/>
+			</StackPanel>
+			<Slider Minimum="0" Maximum="80" x:Name="abbrSlider" ValueChanged="abbrSlider_ValueChanged"/>
+			<CheckBox Margin="3,10,0,0" x:Name="blurEverywhere" Content="- Enable blur in Content Transition." Foreground="White"/>
+		</StackPanel>
+	</Grid>
 </Page>

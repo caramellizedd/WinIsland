@@ -82,6 +82,9 @@ namespace WinIsland
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
             islandContent.Visibility = Visibility.Collapsed;
+
+            // Initialize Settings
+            settings.ambientBGBlur = 40f;
         }
         Timer sysEventTimer = new Timer();
         private void setupEvents()

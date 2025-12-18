@@ -13,6 +13,7 @@ namespace WinIsland
         public System.Windows.Media.Color borderColor;
         public Bitmap thumbnail;
         public static Settings instance;
+        public float ambientBGBlur = 40f;
         public Settings()
         {
             instance = this;

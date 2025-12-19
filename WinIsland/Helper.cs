@@ -63,7 +63,7 @@ namespace WinIsland
                 new WindowInteropHelper(window).Handle,
                 DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
                 1);
-            // TODO: Fix Acrylic Blur for Windows 10.
+            // TODO: Fix Acrylic Blur for Windows 10. (preferably without third-party libraries if possible)
 
             if (isWindows11())
             {
@@ -73,17 +73,21 @@ namespace WinIsland
                     DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW);
                 return;
             }
-            // Acrylic doesn't work. It's stuck on Aero for now. (Win10 Only)
-            HwndSource mainWindowSrc = HwndSource.FromHwnd(new WindowInteropHelper(window).Handle);
-            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0xCC, 0, 0, 0);
-            window.Background = new SolidColorBrush(Color.FromArgb(0x99, 0, 0, 0));
-            var windowHelper = new WindowInteropHelper(window);
 
+            SetWindowAttribute(
+                    new WindowInteropHelper(window).Handle,
+                    DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
+                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW);
+            IntPtr mainWindowPtr = new WindowInteropHelper(window).Handle;
+            HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
+            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0xEE, 0, 0, 0);
+            if (window is PopoutWindow) (window as PopoutWindow).windowBorder.Background = new SolidColorBrush(Color.FromArgb(0xAA, 0, 0, 0));
+
+            WindowInteropHelper windowHelper = new WindowInteropHelper(window);
             PInvoke.AccentPolicy accent = new PInvoke.AccentPolicy
             {
                 AccentState = PInvoke.AccentState.ACCENT_ENABLE_BLURBEHIND
             };
-            accent.GradientColor = (0x99000000);
             int accentStructSize = Marshal.SizeOf<PInvoke.AccentPolicy>(accent);
             IntPtr accentPtr = Marshal.AllocHGlobal(accentStructSize);
             Marshal.StructureToPtr<PInvoke.AccentPolicy>(accent, accentPtr, false);
@@ -119,6 +123,22 @@ namespace WinIsland
 
             Marshal.FreeHGlobal(accentPtr);
         }
+
+        public static void RefreshFrame(Window window)
+        {
+            IntPtr mainWindowPtr = new WindowInteropHelper(window).Handle;
+            HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
+            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
+
+            MARGINS margins = new MARGINS();
+            margins.Left = -1;
+            margins.Right = -1;
+            margins.Top = -1;
+            margins.Bottom = -1;
+
+            ExtendFrame(mainWindowSrc.Handle, margins);
+        }
+
         // Color format: ABGR (DO NOT SPECIFY ALPHA VALUE)
         public static void setBorderColor(Window window, System.Windows.Media.Color rgb, int hexColor = 0x000000FF, Border w10Border = null)
         {

@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WinIsland.PopoutPages;
 using static WinIsland.PInvoke;
+using MessageBox = System.Windows.MessageBox;
 
 namespace WinIsland
 {
@@ -155,6 +156,16 @@ namespace WinIsland
         {
             if (WindowState == WindowState.Maximized)
                 WindowState = WindowState.Normal;
+        }
+
+        private void Window_Activated(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            
         }
     }
 }

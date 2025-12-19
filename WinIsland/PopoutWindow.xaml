@@ -8,6 +8,8 @@
         ResizeMode="NoResize"
         Background="#33000000"
         Loaded="Window_Loaded"
+        Activated="Window_Activated"
+        Deactivated="Window_Deactivated"
         SizeChanged="Window_SizeChanged"
         MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen"
@@ -204,6 +206,7 @@
                             <Setter Property="Background" Value="Transparent"/>
                         </Style>
                     </TabControl.Resources>
+                    <!--Tabs-->
                     <TabItem x:Name="main" Header="Main" Background="#00000000" Template="{StaticResource tabItemStyle}">
                     </TabItem>
                     <TabItem x:Name="advanced" Header="Advanced" Background="#00000000" Template="{StaticResource tabItemStyle}"  >

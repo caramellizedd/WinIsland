@@ -761,5 +761,10 @@ namespace WinIsland
 
             return IntPtr.Zero;
         }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            logger.stream.Close();
+        }
     }
 }

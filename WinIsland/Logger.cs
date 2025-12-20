@@ -10,7 +10,6 @@ namespace WinIsland
     {
         string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_Latest.log";
         DateTime currentDateTime = DateTime.Now;
-        public FileStream stream;
         public Logger()
         {
             StartFileWriter();
@@ -21,34 +20,37 @@ namespace WinIsland
             {
                 File.Delete(path);
             }
-            stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read);
-            String log = "Start LOG\nRunning WinIsland " + StaticStrings.version + "\n";
-            byte[] info = new UTF8Encoding(true).GetBytes(log);
-            try
+            using(var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read))
             {
-                stream.Write(info, 0, info.Length);
-                stream.Close();
-            }
-            catch (Exception ex)
-            {
+                String log = "Start LOG\nRunning WinIsland " + StaticStrings.version + "\n";
+                byte[] info = new UTF8Encoding(true).GetBytes(log);
+                try
+                {
+                    stream.Write(info, 0, info.Length);
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
 
+                }
             }
-
         }
         public void log(string message) 
         {
-            stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read);
             Console.WriteLine("[" + currentDateTime + "] " + message);
-            String log = "[" + currentDateTime + "] " + message + "\n";
-            byte[] info = new UTF8Encoding(true).GetBytes(log);
-            try
+            using (var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read))
             {
-                stream.Write(info, 0, info.Length);
-                stream.Close();
-            }
-            catch (Exception ex)
-            {
+                String log = "[" + currentDateTime + "] " + message + "\n";
+                byte[] info = new UTF8Encoding(true).GetBytes(log);
+                try
+                {
+                    stream.Write(info, 0, info.Length);
+                    stream.Close();
+                }
+                catch (Exception ex)
+                {
 
+                }
             }
         }
     }

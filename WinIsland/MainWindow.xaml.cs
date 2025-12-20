@@ -764,7 +764,7 @@ namespace WinIsland
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            logger.stream.Close();
+            
         }
     }
 }

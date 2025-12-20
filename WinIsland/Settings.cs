@@ -18,8 +18,7 @@ namespace WinIsland
         public static Settings instance;
         public SettingsConfig config;
 
-        string loadedJson = "";
-        string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\config.cfg";
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_config.cfg";
 
         public Settings()
         {

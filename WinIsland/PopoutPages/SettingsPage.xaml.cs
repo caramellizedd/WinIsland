@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -34,6 +35,39 @@ namespace WinIsland.PopoutPages
             blurEverywhere.IsChecked = settings.config.blurEverywhere;
 			abbrValueLabel.Content = (int)settings.config.ambientBGBlur + "px (Def: 40px)";
 			blurEverywhere.Click += blurEverywhere_Click;
+            startupCheck.Click += StartupCheck_Click;
+            using(RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            {
+                if (key == null || key.GetValue("WinIsland") == null)
+                {
+                    startupCheck.IsChecked = false;
+                }
+                else
+                {
+                    
+                    if(key.GetValue("WinIsland").Equals(AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + "\\WinIsland.exe"))
+                        startupCheck.IsChecked = true;
+                    else
+                        startupCheck.IsChecked = false;
+                    key.Close(); // The 'using' statement handles this, but good practice
+                }
+            }
+        }
+
+        private void StartupCheck_Click(object sender, RoutedEventArgs e)
+        {
+            var rWrite = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true);
+            if ((bool)startupCheck.IsChecked)
+            {
+                rWrite.SetValue("WinIsland",
+                                  AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + "\\WinIsland.exe");
+
+                rWrite.Close();
+            }
+            else
+            {
+                rWrite.DeleteValue("WinIsland");
+            }
         }
 
         private void blurEverywhere_Click(object sender, RoutedEventArgs e)

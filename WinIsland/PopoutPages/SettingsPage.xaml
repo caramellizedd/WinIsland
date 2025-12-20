@@ -17,6 +17,7 @@
 			</StackPanel>
 			<Slider Minimum="0" Maximum="80" x:Name="abbrSlider" ValueChanged="abbrSlider_ValueChanged"/>
 			<CheckBox Margin="3,10,0,0" x:Name="blurEverywhere" Content="- Enable blur in Content Transition." Foreground="White"/>
+            <CheckBox Margin="3,10,0,0" x:Name="startupCheck" Content="- Start with Windows." Foreground="White"/>
 		</StackPanel>
 	</Grid>
 </Page>

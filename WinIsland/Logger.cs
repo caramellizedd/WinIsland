@@ -8,7 +8,7 @@ namespace WinIsland
 {
     public class Logger
     {
-        string path = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + "\\latest.log";
+        string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_Latest.log";
         DateTime currentDateTime = DateTime.Now;
         public Logger()
         {

@@ -20,7 +20,7 @@ namespace WinIsland
             {
                 File.Delete(path);
             }
-            using(var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read))
+            using(var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
             {
                 String log = "Start LOG\nRunning WinIsland " + StaticStrings.version + "\n";
                 byte[] info = new UTF8Encoding(true).GetBytes(log);
@@ -38,7 +38,7 @@ namespace WinIsland
         public void log(string message) 
         {
             Console.WriteLine("[" + currentDateTime + "] " + message);
-            using (var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.Read))
+            using (var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
             {
                 String log = "[" + currentDateTime + "] " + message + "\n";
                 byte[] info = new UTF8Encoding(true).GetBytes(log);

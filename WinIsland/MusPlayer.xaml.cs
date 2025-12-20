@@ -302,17 +302,31 @@ namespace WinIsland
         // Button Events
         private async void beforeRewind_Click(object sender, RoutedEventArgs e)
         {
-            await mw.sessionManager.GetCurrentSession().TrySkipPreviousAsync();
+            try
+            {
+                await mw.sessionManager.GetCurrentSession().TrySkipPreviousAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void playPause_Click(object sender, RoutedEventArgs e)
         {
             playPauseAsync();
         }
-        private void afterForward_Click(object sender, RoutedEventArgs e)
+        private async void afterForward_Click(object sender, RoutedEventArgs e)
         {
             //currentSession.ControlSession.TrySkipNextAsync();
-            mw.sessionManager.GetCurrentSession().TrySkipNextAsync();
+            try
+            {
+                await mw.sessionManager.GetCurrentSession().TrySkipNextAsync();
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
     }
 }

@@ -224,6 +224,11 @@
                         <Button x:Name="minimizeButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe921;" FontFamily="./Fonts/#Segoe Fluent Icons" Click="minimizeButton_Click"/>
                     </StackPanel>
                 </Grid>
+                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                    <Label x:Name="versionWatermark" Content="WinIsland version 0" Foreground="White"/>
+                    <Label Content="Warning: Settings doesn't get saved for now. This will be fixed in the next update." Foreground="White"/>
+                    <Label Content="This is an alpha release bugs are expected. Report them by making a new github issue." Foreground="White"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

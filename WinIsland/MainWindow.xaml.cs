@@ -2,6 +2,7 @@
 using NAudio.Gui;
 using System.Diagnostics;
 using System.Drawing.Imaging;
+using System.Drawing.Printing;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -63,28 +64,39 @@ namespace WinIsland
         Settings settings = new Settings();
 
         public static MainWindow instance;
+        public static Logger logger = new Logger();
 
         public MainWindow()
         {
+            logger.log("Initializing island...");
             instance = this;
             InitializeComponent();
-
+            logger.log("Main UI Component initialized.");
             // Fixed volume changing to 30 every time the island starts up
             volumeSlider.Value = (double)dev.AudioEndpointVolume.MasterVolumeLevelScalar;
             volumeSlider.ValueChanged += volumeSlider_ValueChanged;
+            logger.log("Volume Slider Initialized.");
 
             StartMouseTracking();
+            logger.log("Mouse Tracker Initialized.");
             initPages();
+            logger.log("Main Page Initialized (MusPlayer.xaml in source code)");
             toggleMediaControls(false);
+            logger.log("Media Controls has been set to false.");
             settingsButton.IsEnabled = false;
             settingsButton.Opacity = 0;
             setupEvents();
+            logger.log("Events initialized.");
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
             islandContent.Visibility = Visibility.Collapsed;
+            logger.log("Setting UI visibility.");
 
             // Initialize Settings
-            settings.ambientBGBlur = 40f;
+            BlurEffect be = new BlurEffect();
+            be.Radius = settings.config.ambientBGBlur;
+
+            logger.log("Main Island has been initialized.");
         }
         Timer sysEventTimer = new Timer();
         private void setupEvents()
@@ -96,6 +108,7 @@ namespace WinIsland
                         triggerSystemEvent(0, data.ChannelVolume.First());
                 }));
             };
+            logger.log("Volume event registered.");
             sysEventTimer.Elapsed += (sender, e) =>
             {
                 Dispatcher.Invoke(new Action(() => {
@@ -141,6 +154,7 @@ namespace WinIsland
                         ignoreVolumeEvent2.Start();
                     ignoreVolumeEvent2.Restart();
                     sysEventTimer.Stop();
+                    logger.log("Triggered Volume Event!");
                     ignoreMouseEvent = true;
                     smallEventShown = true;
                     BlurEffect be = new BlurEffect();
@@ -178,6 +192,7 @@ namespace WinIsland
         }
         public void renderGradient(Bitmap bmp)
         {
+            logger.log("Getting gradient...");
             LinearGradientBrush gradientBrush = new LinearGradientBrush(Helper.CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
             LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
@@ -194,54 +209,70 @@ namespace WinIsland
         BlurEffect be2 = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            logger.log("Attempting to get focus.");
             Focus();
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
             tick.Start();
             firstPos = Left;
             //MakeWindowClickThrough(false);
+            logger.log("Attempting to be the top most window.");
             Topmost = true;
             Top = 0;
             ShowInTaskbar = false;
             mainContent.Effect = be;
             windowContent.Effect = be2;
+
+            logger.log("Setting window styles...");
             IntPtr hwnd = new WindowInteropHelper(this).Handle;
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
+            logger.log("Window Attributes: Main window Style | WS_EX_TOOLWINDOW");
+
             Window_MouseLeave();
             Focus();
             islandLoaded = true;
         }
 
-        private void Tick_Tick(object? sender, EventArgs e)
+        private async void Tick_Tick(object? sender, EventArgs e)
         {
             clock.Content = DateTime.Now.ToString("hh:mm tt");
             PowerStatus p = SystemInformation.PowerStatus;
             //clock.Content = batteryPercentage;
-            if(p.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Online)
+            if (p.BatteryChargeStatus == BatteryChargeStatus.NoSystemBattery)
+            {
+                setBatteryPercentage(200, true);
+            }
+            else
+                if (p.PowerLineStatus == System.Windows.Forms.PowerLineStatus.Online)
                 setBatteryPercentage((int)(p.BatteryLifePercent * 100), true);
             else
                 setBatteryPercentage((int)(p.BatteryLifePercent * 100));
 
-            if(sessionManager != null)
+            if (sessionManager != null)
             {
-                try
+                if(sessionManager.GetCurrentSession() != null)
                 {
-                    if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                    try
+                    {
+                        if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                        {
+                            //playPause.Content = "\xE102";
+                            playPause2.Content = "\xE102";
+                        }
+                        else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                        {
+                            //playPause.Content = "\xE769";
+                            playPause2.Content = "\xE769";
+                        }
+                    }
+                    catch (NullReferenceException nfe)
                     {
                         //playPause.Content = "\xE102";
                         playPause2.Content = "\xE102";
+                        logger.log("NullReferenceException");
+                        logger.log(nfe.StackTrace);
                     }
-                    else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                    {
-                        //playPause.Content = "\xE769";
-                        playPause2.Content = "\xE769";
-                    }
-                }
-                catch(NullReferenceException nfe)
-                {
-                    //playPause.Content = "\xE102";
-                    playPause2.Content = "\xE102";
                 }
             }
 
@@ -286,6 +317,11 @@ namespace WinIsland
                         break;
                     case 10:
                         battery.Content = "\xEA93";
+                        break;
+                    case 20:
+                        battery.FontFamily = new System.Windows.Media.FontFamily("Segoe UI");
+                        battery.Content = "PC";
+                        battery.FontSize = 17;
                         break;
                 }
                 return;
@@ -552,7 +588,7 @@ namespace WinIsland
             islandMini.BeginAnimation(Grid.OpacityProperty, resetOpacity);
             gradientBG.BeginAnimation(Grid.OpacityProperty, resetOpacity);
             settingsButton.BeginAnimation(Button.OpacityProperty, resetOpacity);
-            if (settings.blurEverywhere)
+            if (settings.config.blurEverywhere)
             {
                 be.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
                 be2.BeginAnimation(BlurEffect.RadiusProperty, blurIslandContentAnim);
@@ -628,6 +664,8 @@ namespace WinIsland
             {
                 toggleMediaControls(false);
                 mediaSessionIsNull = true;
+                logger.log("NullReferenceException");
+                logger.log(nfe.StackTrace);
             }
         }
         private void expandIsland()

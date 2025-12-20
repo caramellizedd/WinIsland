@@ -18,6 +18,7 @@ namespace WinIsland
         public PopoutWindow()
         {
             InitializeComponent();
+            versionWatermark.Content = "WinIsland " + StaticStrings.longVersion;
         }
         private void closeButton_Click(object sender, RoutedEventArgs e)
         {

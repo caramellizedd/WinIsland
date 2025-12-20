@@ -30,28 +30,33 @@ namespace WinIsland.PopoutPages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            abbrSlider.Value = settings.ambientBGBlur;
-            blurEverywhere.IsChecked = settings.blurEverywhere;
-			abbrValueLabel.Content = (int)settings.ambientBGBlur + "px (Def: 40px)";
+            abbrSlider.Value = settings.config.ambientBGBlur;
+            blurEverywhere.IsChecked = settings.config.blurEverywhere;
+			abbrValueLabel.Content = (int)settings.config.ambientBGBlur + "px (Def: 40px)";
 			blurEverywhere.Click += blurEverywhere_Click;
         }
 
         private void blurEverywhere_Click(object sender, RoutedEventArgs e)
         {
-            settings.blurEverywhere = (bool)blurEverywhere.IsChecked;
+            settings.config.blurEverywhere = (bool)blurEverywhere.IsChecked;
         }
 
         private void abbrSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
         {
             if(e.NewValue != e.OldValue)
             {
-                settings.ambientBGBlur = (float)e.NewValue;
-                abbrValueLabel.Content = (int)settings.ambientBGBlur + "px (Def: 40px)";
+                settings.config.ambientBGBlur = (float)e.NewValue;
+                abbrValueLabel.Content = (int)settings.config.ambientBGBlur + "px (Def: 40px)";
                 BlurEffect be = new BlurEffect();
                 be.Radius = (float)e.NewValue;
                 be.RenderingBias = RenderingBias.Performance;
                 MainWindow.instance.bg.Effect = be;
             }
 		}
-	}
+
+        private void Page_Unloaded(object sender, RoutedEventArgs e)
+        {
+            Settings.instance.saveConfig();
+        }
+    }
 }

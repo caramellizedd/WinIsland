@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -31,20 +32,25 @@ namespace WinIsland
             {
                 if (mw.sessionManager != null)
                 {
-                    try
+                    if (mw.sessionManager.GetCurrentSession() != null)
                     {
-                        if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                        try
+                        {
+                            if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
+                            {
+                                playPause.Content = "\xE102";
+                            }
+                            else if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+                            {
+                                playPause.Content = "\xE769";
+                            }
+                        }
+                        catch (NullReferenceException nfe)
                         {
                             playPause.Content = "\xE102";
+                            MainWindow.logger.log("NullReferenceException");
+                            MainWindow.logger.log(nfe.StackTrace);
                         }
-                        else if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                        {
-                            playPause.Content = "\xE769";
-                        }
-                    }
-                    catch (NullReferenceException nfe)
-                    {
-                        playPause.Content = "\xE102";
                     }
                 }
             };
@@ -52,6 +58,7 @@ namespace WinIsland
         }
         private async void getMediaSession()
         {
+            Task.Delay(1000).Wait();
             mw.sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
             if(mw.sessionManager == null)
             {
@@ -95,18 +102,7 @@ namespace WinIsland
             {
                 mw.sessionManager.SessionsChanged += SessionManager_SessionsChanged;
                 mw.sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
-                mw.sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
-                mw.sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
-                mw.sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
-                mediaSessionEmpty = false;
-                var songInfo = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
-                if (songInfo == null) return;
-                this.Dispatcher.Invoke(() =>
-                {
-                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                        mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
-                    toggleMediaControls(true);
-                });
+                
             }
             catch (NullReferenceException nfe)
             {
@@ -114,6 +110,8 @@ namespace WinIsland
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
+                MainWindow.logger.log("NullReferenceException");
+                MainWindow.logger.log(nfe.StackTrace);
             }
         }
         private async void playPauseAsync()
@@ -132,12 +130,24 @@ namespace WinIsland
                 {
                     playPause.Content = "\xE102";
                 }
+                await this.Dispatcher.Invoke(async () =>
+                {
+                    var songInfo = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
+                    songTitle.Content = songInfo.Title;
+                    songArtist.Content = songInfo.Artist;
+                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                        mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                    toggleMediaControls(true);
+                });
             }
             catch (NullReferenceException nfe)
             {
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
+                MainWindow.logger.log("NullReferenceException");
+                MainWindow.logger.log(nfe.StackTrace);
             }
         }
         private void toggleMediaControls(bool value, bool inAnotherThread = true)
@@ -164,6 +174,22 @@ namespace WinIsland
         // GSMTC Events
         private async void SessionManager_CurrentSessionChanged(GlobalSystemMediaTransportControlsSessionManager sender, CurrentSessionChangedEventArgs args)
         {
+            if(sender.GetCurrentSession() != null)
+            {
+                sender.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
+                sender.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
+                sender.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
+                mediaSessionEmpty = false;
+                var songInfo = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
+                if (songInfo == null) return;
+                this.Dispatcher.Invoke(() =>
+                {
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                        mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                    toggleMediaControls(true);
+                });
+            }
+
             try
             {
                 mw.mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
@@ -174,6 +200,8 @@ namespace WinIsland
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
+                MainWindow.logger.log("NullReferenceException");
+                MainWindow.logger.log(nfe.StackTrace);
             }
             catch(COMException ce)
             {
@@ -186,6 +214,16 @@ namespace WinIsland
             try
             {
                 mw.mediaProperties = await sender.GetCurrentSession().TryGetMediaPropertiesAsync();
+                await this.Dispatcher.Invoke(async () =>
+                {
+                    var songInfo = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
+                    songTitle.Content = songInfo.Title;
+                    songArtist.Content = songInfo.Artist;
+                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                        mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                    toggleMediaControls(true);
+                });
                 toggleMediaControls(true, true);
             }
             catch (NullReferenceException nfe)
@@ -193,6 +231,8 @@ namespace WinIsland
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
+                MainWindow.logger.log("NullReferenceException");
+                MainWindow.logger.log(nfe.StackTrace);
             }
             catch
             {

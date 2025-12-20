@@ -6,6 +6,7 @@
       xmlns:local="clr-namespace:WinIsland.PopoutPages"
       mc:Ignorable="d" 
       Loaded="Page_Loaded"
+      Unloaded="Page_Unloaded"
       d:DesignHeight="466" d:DesignWidth="800"
       Title="Main Settings">
     <Grid>

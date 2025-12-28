@@ -45,7 +45,7 @@ namespace WinIsland.PopoutPages
                 else
                 {
                     
-                    if(key.GetValue("WinIsland").Equals('"' + AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + "\\WinIsland.exe\""))
+                    if(key.GetValue("WinIsland").Equals('"' + AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + ".exe\""))
                         startupCheck.IsChecked = true;
                     else
                         startupCheck.IsChecked = false;
@@ -60,7 +60,7 @@ namespace WinIsland.PopoutPages
             if ((bool)startupCheck.IsChecked)
             {
                 rWrite.SetValue("WinIsland",
-                                  '"' + AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + "\\WinIsland.exe\"");
+                                  '"' + AppDomain.CurrentDomain.BaseDirectory + AppDomain.CurrentDomain.FriendlyName + ".exe\"");
 
                 rWrite.Close();
             }

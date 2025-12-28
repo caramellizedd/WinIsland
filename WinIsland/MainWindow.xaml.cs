@@ -89,7 +89,7 @@ namespace WinIsland
             logger.log("Events initialized.");
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
-            islandContent.Visibility = Visibility.Collapsed;
+            islandContent.Visibility = Visibility.Hidden;
             logger.log("Setting UI visibility.");
 
             // Initialize Settings
@@ -693,7 +693,7 @@ namespace WinIsland
             isExpanded = false;
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
-            islandContent.Visibility = Visibility.Collapsed;
+            islandContent.Visibility = Visibility.Hidden;
             islandMini.Visibility = Visibility.Visible;
             ignoreMouseEvent = false;
             AnimateWindowSize(351, 71, (int)firstPos, true, 1);

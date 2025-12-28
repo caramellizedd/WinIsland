@@ -4,6 +4,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using WinIsland.PopoutPages;
 using static WinIsland.PInvoke;
 using MessageBox = System.Windows.MessageBox;
@@ -72,6 +73,23 @@ namespace WinIsland
                 Duration = new TimeSpan(0, 0, 0, 0, 500),
                 EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseOut }
             };
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 20,
+                    To = 0,
+                    Duration = new TimeSpan(0, 0, 0, 0, 250),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+
+                BlurEffect be = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+
+                contentFrame.Effect = be;
+            }
+
             frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
         }
 
@@ -90,6 +108,23 @@ namespace WinIsland
                 Duration = new TimeSpan(0, 0, 0, 0, 500),
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
             };
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 20,
+                    To = 0,
+                    Duration = new TimeSpan(0, 0, 0, 0, 350),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+
+                BlurEffect be = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+
+                windowTitle.Effect = be;
+            }
+            
             windowTitleTransform.BeginAnimation(TranslateTransform.XProperty, sa1);
         }
         public void Navigate(object content)
@@ -102,7 +137,6 @@ namespace WinIsland
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
             };
             
-
             DoubleAnimation ta = new DoubleAnimation
             {
                 From = 0,
@@ -110,10 +144,41 @@ namespace WinIsland
                 Duration = new TimeSpan(0, 0, 0, 0, 250),
                 EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseIn }
             };
+            
             ta.Completed += (sender, e) =>
             {
                 contentFrame.Navigate(content);
             };
+
+
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 20,
+                    Duration = new TimeSpan(0, 0, 0, 0, 300),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+                DoubleAnimation blur2 = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 20,
+                    Duration = new TimeSpan(0, 0, 0, 0, 250),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+                BlurEffect be = new BlurEffect();
+                BlurEffect be2 = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be2.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+                be2.BeginAnimation(BlurEffect.RadiusProperty, blur2);
+
+                windowTitle.Effect = be;
+                contentFrame.Effect = be2;
+            }
+            
+
             windowTitleTransform.BeginAnimation(TranslateTransform.XProperty, sa1);
             frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
 

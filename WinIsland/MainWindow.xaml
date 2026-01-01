@@ -98,11 +98,7 @@
                 </Grid.OpacityMask>
                 <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="10,10,10,10"/>
                 <Grid x:Name="gradientBG" ClipToBounds="True">
-                    <Image VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-30" Stretch="UniformToFill">
-                        <Image.Effect>
-                            <BlurEffect Radius="40" RenderingBias="Performance"/>
-                        </Image.Effect>
-                    </Image>
+                    <Image VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-130" Stretch="UniformToFill"/>
                     <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.6"/>
                     <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.6"/>
                 </Grid>
@@ -118,8 +114,8 @@
                     </StackPanel>
                 </Grid>
                 <Grid x:Name="systemEventSmall" VerticalAlignment="Top" Margin="10,0,10,0">
-                    <Label Margin="5,0,0,0" Content="Volume : " FontFamily="Segoe UI" FontSize="16" Foreground="White"/>
-                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="80,4,30,0" Value="0.3"/>
+                    <Label Margin="1,2,0,0" Content="&#xE767;" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="20" Foreground="White"/>
+                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="34,4,30,0" Value="0.3"/>
                 </Grid>
                 <!--Settings Button-->
                 <Button x:Name="settingsButton" Click="settingsButton_Click" Content="&#xE713;" Height="24" Width="24" Margin="0,5,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" HorizontalAlignment="Right" VerticalAlignment="Top"/>

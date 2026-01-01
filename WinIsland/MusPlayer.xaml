@@ -77,14 +77,6 @@
             </Style>
         </Grid.Resources>
         <Grid x:Name="thumbnailGlow" MaxWidth="200" MaxHeight="200" Margin="50,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
-            <Rectangle>
-                <Rectangle.Effect>
-                    <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
-                </Rectangle.Effect>
-                <Rectangle.Fill>
-                    <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
-                </Rectangle.Fill>
-            </Rectangle>
             <Image x:Name="songThumbnail" Stretch="Uniform"/>
         </Grid>
         <Label x:Name="songTitle" Content="No song playing" Foreground="White" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>

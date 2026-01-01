@@ -92,10 +92,6 @@ namespace WinIsland
             islandContent.Visibility = Visibility.Hidden;
             logger.log("Setting UI visibility.");
 
-            // Initialize Settings
-            BlurEffect be = new BlurEffect();
-            be.Radius = settings.config.ambientBGBlur;
-
             logger.log("Main Island has been initialized.");
         }
         Timer sysEventTimer = new Timer();
@@ -197,7 +193,8 @@ namespace WinIsland
             LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
             gridBG2.Background = gradientBrush2;
-            bg.Source = Helper.ConvertToImageSource(bmp);
+            Bitmap bmpBlurred = Helper.Blur(bmp, (int)(settings.config.ambientBGBlur/10));
+            bg.Source = Helper.ConvertToImageSource(bmpBlurred);
             Color color = Helper.CalculateAverageColor(bmp);
             windowBorder.BorderBrush = new SolidColorBrush(color);
             settings.thumbnail = bmp;
@@ -277,6 +274,8 @@ namespace WinIsland
             }
 
         }
+        public String[] batteryIcon = ["\xE85A", "\xE85B", "\xE85C", "\xE85D", "\xE85E", "\xE85F", "\xE860", "\xE861", "\xE862", "\xE83E", "\xEA93"];
+        public String[] batteryIconCharging = [""];
         // TODO: Move this to Utils.cs with the function returning a string
         private void setBatteryPercentage(int percentage, bool isCharging = false)
         {

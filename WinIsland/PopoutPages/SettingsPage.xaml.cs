@@ -81,10 +81,6 @@ namespace WinIsland.PopoutPages
             {
                 settings.config.ambientBGBlur = (float)e.NewValue;
                 abbrValueLabel.Content = (int)settings.config.ambientBGBlur + "px (Def: 40px)";
-                BlurEffect be = new BlurEffect();
-                be.Radius = (float)e.NewValue;
-                be.RenderingBias = RenderingBias.Performance;
-                MainWindow.instance.bg.Effect = be;
             }
 		}
 

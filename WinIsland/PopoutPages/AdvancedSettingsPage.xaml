@@ -5,11 +5,20 @@
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:local="clr-namespace:WinIsland.PopoutPages"
       mc:Ignorable="d" 
+      Unloaded="Page_Unloaded"
       d:DesignHeight="466" d:DesignWidth="800"
       Loaded="Page_Loaded"
-      Title="AdvancedSettingsPage">
+      Title="Advanced Settings">
 
     <Grid>
-        <Label Content="This page is not ready yet. Stay updated!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <StackPanel Margin="10" Width="300" HorizontalAlignment="Left" VerticalAlignment="Top">
+            <StackPanel Orientation="Horizontal">
+                <Label Content="Island Corner Radius"/>
+                <Label Content="0px (Def: 10px)" x:Name="corRadLabel" Margin="4,0,0,0"/>
+            </StackPanel>
+            <Slider Minimum="0" Maximum="40" x:Name="corRadSlider" ValueChanged="corRadSlider_ValueChanged" MouseLeave="corRadSlider_MouseLeave"/>
+            <CheckBox Margin="3,10,0,0" x:Name="hideClockToggle" Content="- Hide the clock." Click="hideClockToggle_Click"/>
+            <CheckBox Margin="3,10,0,0" x:Name="hideBatteryToggle" Content="- Hide the battery icon." Click="hideBatteryToggle_Click"/>
+        </StackPanel>
     </Grid>
 </Page>

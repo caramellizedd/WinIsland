@@ -1,4 +1,5 @@
-﻿using NAudio.CoreAudioApi;
+﻿using iNKORE.UI.WPF.Modern;
+using NAudio.CoreAudioApi;
 using NAudio.Gui;
 using System.Diagnostics;
 using System.Drawing.Imaging;
@@ -137,6 +138,10 @@ namespace WinIsland
                     systemEventSmall.BeginAnimation(Grid.OpacityProperty, hideEvent);
                 }));
             };
+            ThemeManager.Current.ActualApplicationThemeChanged += (sender, e) =>
+            {
+                renderGradient(settings.thumbnail);
+            };
         }
         private void initPages()
         {
@@ -190,11 +195,13 @@ namespace WinIsland
         public void renderGradient(Bitmap bmp)
         {
             logger.log("Getting gradient...");
-            LinearGradientBrush gradientBrush = new LinearGradientBrush(Helper.CalculateAverageColor(bmp), Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
-            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
+            Color color = Helper.CalculateAverageColor(bmp);
+            if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
+                color = Helper.Lighten(color, 1f);
+            LinearGradientBrush gradientBrush = new LinearGradientBrush(color, Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
+            LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), color, new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
             gridBG2.Background = gradientBrush2;
-            Color color = Helper.CalculateAverageColor(bmp);
             windowBorder.BorderBrush = new SolidColorBrush(color);
             settings.borderColor = color;
             dropShadowEffect.Color = color;
@@ -234,6 +241,38 @@ namespace WinIsland
             int extendedStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
             SetWindowLong(hwnd, GWL_EXSTYLE, extendedStyle | WS_EX_TOOLWINDOW);
             logger.log("Window Attributes: Main window Style | WS_EX_TOOLWINDOW");
+
+            logger.log("Reading UI settings...");
+
+            mainWindowB.CornerRadius = new CornerRadius(settings.config.cornerRadius);
+            windowBorder.CornerRadius = new CornerRadius(settings.config.cornerRadius);
+
+            logger.log("Set the Corner Radius to " + settings.config.cornerRadius);
+            logger.log("Clock is " + (settings.config.clockHidden ? "Hidden" : "Visible"));
+            logger.log("Battery icon is " + (settings.config.batteryHidden ? "Hidden" : "Visible"));
+
+            clock.Visibility = settings.config.clockHidden ? Visibility.Hidden : Visibility.Visible;
+            battery.Visibility = settings.config.batteryHidden ? Visibility.Hidden : Visibility.Visible;
+
+            if (battery.Visibility == Visibility.Hidden)
+            {
+                islandMini.Margin = new Thickness(0, 0, 15, 0);
+                if (clock.Visibility == Visibility.Hidden)
+                {
+                    islandMini.Margin = new Thickness(0);
+                    islandMini.HorizontalAlignment = System.Windows.HorizontalAlignment.Center;
+                }
+                else
+                {
+                    islandMini.Margin = new Thickness(0, 0, 15, 0);
+                    islandMini.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
+                }
+            }
+            else
+            {
+                islandMini.Margin = new Thickness(0, 0, 60, 0);
+                islandMini.HorizontalAlignment = System.Windows.HorizontalAlignment.Right;
+            }
 
             Window_MouseLeave();
             Focus();
@@ -531,8 +570,8 @@ namespace WinIsland
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 0, 10, 0),
-                    To = new Thickness(0, 0, 35, 0),
+                    From = new Thickness(0, 5, 15, 0),
+                    To = new Thickness(0, 5, 37, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
                     EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
                 };
@@ -542,8 +581,8 @@ namespace WinIsland
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 0, 32, 0),
-                    To = new Thickness(0, 0, 10, 0),
+                    From = new Thickness(0, 5, 37, 0),
+                    To = new Thickness(0, 5, 15, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
                     EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
                 };
@@ -553,8 +592,8 @@ namespace WinIsland
             {
                 ta = new ThicknessAnimation
                 {
-                    From = new Thickness(0, 0, 32, 0),
-                    To = new Thickness(0, 0, 10, 0),
+                    From = new Thickness(0, 5, 37, 0),
+                    To = new Thickness(0, 5, 15, 0),
                     Duration = new TimeSpan(0, 0, 0, 0, 300),
                     EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
                 };

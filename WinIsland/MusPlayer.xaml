@@ -3,6 +3,7 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
       xmlns:local="clr-namespace:WinIsland"
       mc:Ignorable="d" 
       d:DesignHeight="370" d:DesignWidth="872"
@@ -71,7 +72,7 @@
                         <Setter Property="Foreground" Value="Gray"/>
                     </Trigger>
                     <Trigger Property="IsEnabled" Value="True">
-                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
                     </Trigger>
                 </Style.Triggers>
             </Style>
@@ -87,7 +88,7 @@
             </Rectangle>
             <Image x:Name="songThumbnail" Stretch="Uniform"/>
         </Grid>
-        <Label x:Name="songTitle" Content="No song playing" Foreground="White" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
+        <Label x:Name="songTitle" Content="No song playing" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
         <Label x:Name="songArtist" Content="WinIsland by Charamellized" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
         <StackPanel Margin="394,216,266,0" Orientation="Horizontal">
             <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>

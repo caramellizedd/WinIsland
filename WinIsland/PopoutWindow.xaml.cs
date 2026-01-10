@@ -59,10 +59,11 @@ namespace WinIsland
         {
             var hwnd = new WindowInteropHelper(this).Handle;
             SetWindowLong(hwnd, PInvoke.GWL_STYLE, GetWindowLong(hwnd, PInvoke.GWL_STYLE) & ~PInvoke.WS_SYSMENU);
-            Helper.EnableBlur(this);
+            //Helper.EnableBlur(this);
             //bg.Source = Helper.ConvertToImageSource(Settings.instance.thumbnail);
             //mainWindowGrid.Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(0x11, Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B));
             Helper.setBorderColor(this, Settings.instance.borderColor, Helper.ConvertToABGR(Settings.instance.borderColor.R, Settings.instance.borderColor.G, Settings.instance.borderColor.B), windowBorder);
+            Background = new SolidColorBrush(Colors.Transparent);
         }
         private void contentFrame_Navigating(object sender, System.Windows.Navigation.NavigatingCancelEventArgs e)
         {

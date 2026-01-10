@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
         xmlns:local="clr-namespace:WinIsland"
         mc:Ignorable="d"
         WindowStyle="None"
@@ -18,7 +19,7 @@
         Title="WinIslandOwO234" Height="71" Width="351">
 
     <Grid x:Name="windowContent">
-        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="20,5,20,29" Background="Black" BorderBrush="#444444" BorderThickness="1,1,1,1" CornerRadius="10">
+        <Border x:Name="windowBorder" MouseUp="Border_MouseUp" Margin="20,5,20,29" BorderBrush="#444444" BorderThickness="1,1,1,1" CornerRadius="10">
             <Border.Resources>
                 <Style x:Name="buttonStyle" TargetType="{x:Type Button}">
                     <Setter Property="Background" Value="Transparent"/>
@@ -81,7 +82,7 @@
                             <Setter Property="Foreground" Value="Gray"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="True">
-                            <Setter Property="Foreground" Value="White"/>
+                            <Setter Property="Foreground" Value="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
                         </Trigger>
                     </Style.Triggers>
                 </Style>
@@ -96,7 +97,7 @@
                 <Grid.OpacityMask>
                     <VisualBrush Visual="{Binding ElementName=mainWindowB}" />
                 </Grid.OpacityMask>
-                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="Black" BorderBrush="#444444" CornerRadius="10,10,10,10"/>
+                <Border x:Name="mainWindowB" MouseUp="Border_MouseUp" Background="{DynamicResource {x:Static ui:ThemeKeys.ApplicationPageBackgroundThemeBrushKey}}" BorderBrush="#444444" CornerRadius="10"/>
                 <Grid x:Name="gradientBG" ClipToBounds="True">
                     <Image VerticalAlignment="Center" ClipToBounds="True" x:Name="bg" Opacity="0.2" Margin="-130" Stretch="UniformToFill"/>
                     <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.6"/>
@@ -104,9 +105,9 @@
                 </Grid>
                 <Grid x:Name="miniIslandGrid">
                     <!--Clock-->
-                    <Label x:Name="clock" Margin="10,2,0,0" Foreground="White" FontSize="16" FontFamily="Segoe UI"/>
+                    <Label x:Name="clock" Margin="15,6,0,0" FontSize="16" FontFamily="Segoe UI"/>
                     <!--Battery-->
-                    <Label x:Name="battery" Margin="0,0,10,0" HorizontalAlignment="Right" Content="&#xE83F;" Foreground="White" FontSize="26" FontFamily="./Fonts/#Segoe Fluent Icons" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
+                    <Label x:Name="battery" Margin="0,6,15,0" HorizontalAlignment="Right" Content="&#xE83F;" FontSize="26" FontFamily="./Fonts/#Segoe Fluent Icons" VerticalContentAlignment="Center" VerticalAlignment="Top"/>
                     <StackPanel x:Name="islandMini" HorizontalAlignment="Right" Orientation="Horizontal" Margin="0,0,60,0">
                         <Button x:Name="beforeRewind2" Click="beforeRewind_Click" Content="&#xE100;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
                         <Button x:Name="playPause2" Click="playPause_Click" Content="&#xE102;" Height="25" Width="25" Margin="0,0,5,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" FontWeight="Bold"/>
@@ -114,8 +115,8 @@
                     </StackPanel>
                 </Grid>
                 <Grid x:Name="systemEventSmall" VerticalAlignment="Top" Margin="10,0,10,0">
-                    <Label Margin="1,2,0,0" Content="&#xE767;" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="20" Foreground="White"/>
-                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="34,4,30,0" Value="0.3"/>
+                    <Label Margin="1,7,0,0" Content="&#xE767;" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="20"/>
+                    <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="34,0,30,0" Value="0.3"/>
                 </Grid>
                 <!--Settings Button-->
                 <Button x:Name="settingsButton" Click="settingsButton_Click" Content="&#xE713;" Height="24" Width="24" Margin="0,5,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" HorizontalAlignment="Right" VerticalAlignment="Top"/>

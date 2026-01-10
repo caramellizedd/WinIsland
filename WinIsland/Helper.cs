@@ -23,6 +23,16 @@ namespace WinIsland
 {
     public class Helper
     {
+        public static Color Lighten(Color color, float factor)
+        {
+            // factor is typically between 0 and 1. 0 returns the original color, 1 returns white.
+            return Color.FromArgb(
+                color.A,
+                (byte)(color.R + (255 - color.R) * factor),
+                (byte)(color.G + (255 - color.G) * factor),
+                (byte)(color.B + (255 - color.B) * factor)
+            );
+        }
         public static bool isWindows11()
         {
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion");
@@ -40,103 +50,6 @@ namespace WinIsland
                 return source.CompositionTarget.TransformToDevice.M11; // X axis DPI scale
             }
             return 1.0; // Default scale
-        }
-        public static void ExtendFrameToClientArea(Window window)
-        {
-            IntPtr mainWindowPtr = new WindowInteropHelper(window).Handle;
-            HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
-            mainWindowSrc.CompositionTarget.BackgroundColor = System.Windows.Media.Color.FromArgb(0, 0, 0, 0);
-
-            MARGINS margins = new MARGINS();
-            margins.Left = -1;
-            margins.Right = -1;
-            margins.Top = -1;
-            margins.Bottom = -1;
-
-            ExtendFrame(mainWindowPtr, margins);
-        }
-        // NOTE: useAcrylic only affects Windows 10 or 11 21H1
-        public static void EnableBlur(Window window, bool useAcrylic = true)
-        {
-            Helper.ExtendFrameToClientArea(window);
-            SetWindowAttribute(
-                new WindowInteropHelper(window).Handle,
-                DWMWINDOWATTRIBUTE.DWMWA_USE_IMMERSIVE_DARK_MODE,
-                1);
-            // TODO: Fix Acrylic Blur for Windows 10. (preferably without third-party libraries if possible)
-
-            if (isWindows11())
-            {
-                SetWindowAttribute(
-                    new WindowInteropHelper(window).Handle,
-                    DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
-                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_TABBEDWINDOW);
-                return;
-            }
-
-            SetWindowAttribute(
-                    new WindowInteropHelper(window).Handle,
-                    DWMWINDOWATTRIBUTE.DWMWA_SYSTEMBACKDROP_TYPE,
-                    DWM_SYSTEMBACKDROP_TYPE.DWMSBT_MAINWINDOW);
-            IntPtr mainWindowPtr = new WindowInteropHelper(window).Handle;
-            HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
-            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0xEE, 0, 0, 0);
-            if (window is PopoutWindow) (window as PopoutWindow).windowBorder.Background = new SolidColorBrush(Color.FromArgb(0xAA, 0, 0, 0));
-
-            WindowInteropHelper windowHelper = new WindowInteropHelper(window);
-            PInvoke.AccentPolicy accent = new PInvoke.AccentPolicy
-            {
-                AccentState = PInvoke.AccentState.ACCENT_ENABLE_BLURBEHIND
-            };
-            int accentStructSize = Marshal.SizeOf<PInvoke.AccentPolicy>(accent);
-            IntPtr accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr<PInvoke.AccentPolicy>(accent, accentPtr, false);
-            PInvoke.WindowCompositionAttributeData data = default(PInvoke.WindowCompositionAttributeData);
-            data.Attribute = PInvoke.WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-            PInvoke.SetWindowCompositionAttribute(windowHelper.Handle, ref data);
-            Marshal.FreeHGlobal(accentPtr);
-        }
-        public static void DisableBlur(Window window)
-        {
-            // TODO: Add Support for Windows 11 Modern Acrylic or Mica
-            // Render as transparent background for now
-            if (isWindows11()) return;
-            var windowHelper = new WindowInteropHelper(window);
-
-            var accent = new AccentPolicy();
-            accent.AccentState = AccentState.ACCENT_INVALID_STATE;
-            accent.GradientColor = (0 << 24) | (0x990000 & 0xFFFFFF);
-
-            var accentStructSize = Marshal.SizeOf(accent);
-
-            var accentPtr = Marshal.AllocHGlobal(accentStructSize);
-            Marshal.StructureToPtr(accent, accentPtr, false);
-
-            var data = new WindowCompositionAttributeData();
-            data.Attribute = WindowCompositionAttribute.WCA_ACCENT_POLICY;
-            data.SizeOfData = accentStructSize;
-            data.Data = accentPtr;
-
-            SetWindowCompositionAttribute(windowHelper.Handle, ref data);
-
-            Marshal.FreeHGlobal(accentPtr);
-        }
-
-        public static void RefreshFrame(Window window)
-        {
-            IntPtr mainWindowPtr = new WindowInteropHelper(window).Handle;
-            HwndSource mainWindowSrc = HwndSource.FromHwnd(mainWindowPtr);
-            mainWindowSrc.CompositionTarget.BackgroundColor = Color.FromArgb(0, 0, 0, 0);
-
-            MARGINS margins = new MARGINS();
-            margins.Left = -1;
-            margins.Right = -1;
-            margins.Top = -1;
-            margins.Bottom = -1;
-
-            ExtendFrame(mainWindowSrc.Handle, margins);
         }
 
         // Color format: ABGR (DO NOT SPECIFY ALPHA VALUE)
@@ -281,6 +194,7 @@ namespace WinIsland
 
             return (Bitmap)Bitmap.FromStream(fileMemoryStream);
         }
+        
         public static BitmapImage ConvertToImageSource(Bitmap src)
         {
             // Fix for crash on certain images.

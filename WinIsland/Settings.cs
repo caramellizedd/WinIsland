@@ -16,6 +16,7 @@ namespace WinIsland
         public System.Windows.Media.Color borderColor;
         public Bitmap thumbnail;
         public static Settings instance;
+
         public SettingsConfig config;
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_config.cfg";
@@ -48,15 +49,22 @@ namespace WinIsland
             config = new SettingsConfig
             {
                 blurEverywhere = false,
-                ambientBGBlur = 40
+                ambientBGBlur = 40,
+                cornerRadius = 10,
+                clockHidden = true,
+                batteryHidden = true
             };
             saveConfig();
         }
         public class SettingsConfig()
         {
             public bool blurEverywhere { get; set; }
+            public bool clockHidden { get; set; }
+            public bool batteryHidden { get; set; }
 
             public float ambientBGBlur { get; set; }
+
+            public int cornerRadius { get; set; }
         }
     }
 }

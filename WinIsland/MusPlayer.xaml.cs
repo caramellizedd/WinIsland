@@ -118,14 +118,6 @@ namespace WinIsland
                 mw.sessionManager.GetCurrentSession().TryTogglePlayPauseAsync();
                 MainWindow.logger.log(string.Format("{0} - {1}", mw.mediaProperties?.Artist, mw.mediaProperties?.Title));
                 MainWindow.logger.log($"Status: {mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
-                if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
-                {
-                    playPause.Content = "\xE769";
-                }
-                else if (mw.sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                {
-                    playPause.Content = "\xE102";
-                }
                 await this.Dispatcher.Invoke(async () =>
                 {
                     //var songInfo = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();

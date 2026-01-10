@@ -14,6 +14,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using Windows.Media.Control;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static WinIsland.PInvoke;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
@@ -210,6 +211,7 @@ namespace WinIsland
             Focus();
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
+            tick.Interval = new TimeSpan(0, 0, 0, 0, 100);
             tick.Start();
             firstPos = Left;
             //MakeWindowClickThrough(false);
@@ -649,16 +651,6 @@ namespace WinIsland
                 sessionManager.GetCurrentSession().TryTogglePlayPauseAsync();
                 Console.WriteLine("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title);
                 Console.WriteLine($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
-                if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused)
-                {
-                    //playPause.Content = "\xE769";
-                    playPause2.Content = "\xE769";
-                }
-                else if (sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
-                {
-                    //playPause.Content = "\xE102";
-                    playPause2.Content = "\xE102";
-                }
             }catch(NullReferenceException nfe)
             {
                 toggleMediaControls(false);
@@ -676,7 +668,7 @@ namespace WinIsland
             AnimateWindowSize(872, 370, (int)firstPos - 255);
             new Thread(() =>
             {
-                while (isAnimating) ;
+                while (isAnimating) Thread.Sleep(100);
                 this.Dispatcher.Invoke(() =>
                 {
                     //bg.Visibility = Visibility.Visible;

@@ -10,10 +10,6 @@
       Title="AdvancedSettingsPage">
 
     <Grid>
-        <CheckBox Content="- Placeholder" Width="110" Height="15" Foreground="White"/>
-        <CheckBox Content="- Placeholder" Width="110" Height="15" Foreground="White" Margin="231,287,459,164"/>
-        <CheckBox Content="- Placeholder" Width="110" Height="15" Foreground="White" Margin="194,149,496,302"/>
-        <CheckBox Content="- Placeholder" Width="110" Height="15" Foreground="White" Margin="490,315,200,136"/>
-        <CheckBox Content="- Placeholder" Width="110" Height="15" Foreground="White" Margin="558,133,132,318"/>
+        <Label Content="This page is not ready yet. Stay updated!" HorizontalAlignment="Center" VerticalAlignment="Center"/>
     </Grid>
 </Page>

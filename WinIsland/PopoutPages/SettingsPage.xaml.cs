@@ -88,5 +88,16 @@ namespace WinIsland.PopoutPages
         {
             Settings.instance.saveConfig();
         }
+
+        private void abbrSlider_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
+        {
+            
+        }
+
+        private void reloadBG_Click(object sender, RoutedEventArgs e)
+        {
+            if (settings.thumbnail != null)
+                MainWindow.instance.renderBackground(settings.thumbnail);
+        }
     }
 }

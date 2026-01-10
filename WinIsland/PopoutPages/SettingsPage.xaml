@@ -15,9 +15,11 @@
 				<Label Content="Ambient Background Blur Radius" Foreground="White"/>
 				<Label Content="0px (Def: 40p)" Foreground="White" x:Name="abbrValueLabel"/>
 			</StackPanel>
-			<Slider Minimum="0" Maximum="80" x:Name="abbrSlider" ValueChanged="abbrSlider_ValueChanged"/>
+			<Slider Minimum="0" Maximum="80" x:Name="abbrSlider" ValueChanged="abbrSlider_ValueChanged" MouseLeave="abbrSlider_MouseLeave"/>
+            <Button Content="Reload Background" x:Name="reloadBG" Click="reloadBG_Click" Margin="0,10,0,0"/>
 			<CheckBox Margin="3,10,0,0" x:Name="blurEverywhere" Content="- Enable blur in Content Transition." Foreground="White"/>
             <CheckBox Margin="3,10,0,0" x:Name="startupCheck" Content="- Start with Windows." Foreground="White"/>
-		</StackPanel>
+            
+        </StackPanel>
 	</Grid>
 </Page>

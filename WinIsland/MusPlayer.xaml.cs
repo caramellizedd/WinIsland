@@ -247,8 +247,12 @@ namespace WinIsland
                 songTitle.Content = songInfo.Title;
                 songArtist.Content = songInfo.Artist;
                 songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
                 if (Helper.GetBitmap(songInfo.Thumbnail) != null)
-                    mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
+                {
+                    mw.renderGradient(Settings.instance.thumbnail);
+                }
+                    
                 toggleMediaControls(true);
             });
         }

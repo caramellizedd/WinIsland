@@ -194,13 +194,20 @@ namespace WinIsland
             LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), Helper.CalculateAverageColor(bmp), new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
             gridBG2.Background = gradientBrush2;
-            Bitmap bmpBlurred = Helper.Blur(bmp, (int)(settings.config.ambientBGBlur/10));
-            bg.Source = Helper.ConvertToImageSource(bmpBlurred);
             Color color = Helper.CalculateAverageColor(bmp);
             windowBorder.BorderBrush = new SolidColorBrush(color);
-            settings.thumbnail = bmp;
             settings.borderColor = color;
             dropShadowEffect.Color = color;
+            if (settings.thumbnail != null)
+                renderBackground(bmp);
+        }
+        public void renderBackground(Bitmap bmp)
+        {
+            bg.Source = Helper.ConvertToImageSource(bmp);
+            BlurEffect be = new BlurEffect();
+            be.Radius = settings.config.ambientBGBlur;
+            be.RenderingBias = RenderingBias.Performance;
+            bg.Effect = be;
         }
 
         BlurEffect be = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace WinIsland
+﻿namespace WinIsland
 {
     public class StaticStrings
     {

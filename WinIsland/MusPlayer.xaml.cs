@@ -95,9 +95,13 @@ namespace WinIsland
             {
                 mw.sessionManager.SessionsChanged += SessionManager_SessionsChanged;
                 mw.sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
-                mw.sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
-                mw.sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
-                mw.sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
+                if(mw.sessionManager.GetCurrentSession() != null)
+                {
+                    mw.sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
+                    mw.sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
+                    mw.sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
+                }
+                
 
             }
             catch (NullReferenceException nfe)
@@ -181,6 +185,13 @@ namespace WinIsland
                 toggleMediaControls(false);
                 mediaSessionEmpty = true;
                 getMediaSession();
+                this.Dispatcher.Invoke(() =>
+                {
+                    songTitle.Content = "No media playing.";
+                    songArtist.Content = "WinIsland by Charamellized.";
+                    songThumbnail.Source = null;
+                    toggleMediaControls(false);
+                });
                 MainWindow.logger.log("NullReferenceException");
                 MainWindow.logger.log(nfe.StackTrace);
             }
@@ -240,21 +251,31 @@ namespace WinIsland
         }
         private async void getMusicInfo(GlobalSystemMediaTransportControlsSession sender)
         {
-            var songInfo = await sender.TryGetMediaPropertiesAsync();
-            if (songInfo == null) return;
-            this.Dispatcher.Invoke(() =>
+            try
             {
-                songTitle.Content = songInfo.Title;
-                songArtist.Content = songInfo.Artist;
-                songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
-                Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
-                if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                var songInfo = await sender.TryGetMediaPropertiesAsync();
+                if (songInfo == null) return;
+                this.Dispatcher.Invoke(() =>
                 {
-                    mw.renderGradient(Settings.instance.thumbnail);
-                }
-                    
-                toggleMediaControls(true);
-            });
+                    songTitle.Content = songInfo.Title;
+                    songArtist.Content = songInfo.Artist;
+                    songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
+                    Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
+                    if (Helper.GetBitmap(songInfo.Thumbnail) != null)
+                    {
+                        mw.renderGradient(Settings.instance.thumbnail);
+                    }
+
+                    toggleMediaControls(true);
+                });
+            }
+            catch(NullReferenceException nuEx){
+                // TODO: Do something here.
+            }
+            catch(COMException comEx)
+            {
+
+            }
         }
         // Button Events
         private async void beforeRewind_Click(object sender, RoutedEventArgs e)

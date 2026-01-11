@@ -15,6 +15,7 @@ using System.Windows.Media.Effects;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using Windows.Media.Control;
+using WinRT;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static WinIsland.PInvoke;
 using Application = System.Windows.Application;

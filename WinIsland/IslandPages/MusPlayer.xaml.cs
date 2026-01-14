@@ -11,7 +11,7 @@ using System.Windows.Threading;
 using Windows.Media.Control;
 using WinIsland.Properties;
 
-namespace WinIsland
+namespace WinIsland.IslandPages
 {
     /// <summary>
     /// Interaction logic for MusPlayer.xaml

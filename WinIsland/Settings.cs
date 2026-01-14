@@ -28,6 +28,7 @@ namespace WinIsland
         }
         private void loadConfig()
         {
+            MainWindow.logger.log("Loading config file...");
             if (!File.Exists(path))
             {
                 loadDefaultValues();
@@ -40,12 +41,14 @@ namespace WinIsland
         }
         public void saveConfig()
         {
+            MainWindow.logger.log("Saving config file...");
             string temp = JsonConvert.SerializeObject(config);
             File.WriteAllText(path, temp);
             MainWindow.logger.log("Saved config.");
         }
         private void loadDefaultValues()
         {
+            MainWindow.logger.log("Settings file invalid or missing, creating a new one...");
             config = new SettingsConfig
             {
                 blurEverywhere = false,

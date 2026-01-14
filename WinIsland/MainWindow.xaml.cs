@@ -18,6 +18,7 @@ using Windows.Media.Control;
 using WinRT;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static WinIsland.PInvoke;
+using WinIsland.IslandPages;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
 using Color = System.Windows.Media.Color;
@@ -148,6 +149,7 @@ namespace WinIsland
         {
             // Load default pages
             islandContent.Navigate(new MusPlayer());
+            //islandContent.Navigate(new Weather());
         }
         private void triggerSystemEvent(int id, double volume = 0)
         {

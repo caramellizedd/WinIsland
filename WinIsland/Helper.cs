@@ -55,6 +55,7 @@ namespace WinIsland
         // Color format: ABGR (DO NOT SPECIFY ALPHA VALUE)
         public static void setBorderColor(Window window, System.Windows.Media.Color rgb, int hexColor = 0x000000FF, Border w10Border = null)
         {
+            MainWindow.logger.log("Setting border color to " + rgb.ToString());
             if (isWindows11())
             {
                 IntPtr hWnd = new WindowInteropHelper(Window.GetWindow(window)).EnsureHandle();
@@ -71,6 +72,7 @@ namespace WinIsland
 
         public static int ConvertToABGR(int r, int g, int b)
         {
+            MainWindow.logger.log("Converting RGB to ABGR");
             string rstr = r.ToString("X");
             string gstr = g.ToString("X");
             string bstr = b.ToString("X");
@@ -79,6 +81,7 @@ namespace WinIsland
         }
         public static System.Windows.Media.Color CalculateAverageColor(Bitmap bm)
         {
+            MainWindow.logger.log("Getting average color...");
             int width = bm.Width;
             int height = bm.Height;
             int red = 0;
@@ -89,12 +92,14 @@ namespace WinIsland
             long[] totals = new long[] { 0, 0, 0 };
             int bppModifier = bm.PixelFormat == System.Drawing.Imaging.PixelFormat.Format24bppRgb ? 3 : 4; // cutting corners, will fail on anything else but 32 and 24 bit images
 
+            MainWindow.logger.log("[CalculateAverageColor] Locking BitmapBits...");
             BitmapData srcData = bm.LockBits(new System.Drawing.Rectangle(0, 0, bm.Width, bm.Height), ImageLockMode.ReadOnly, bm.PixelFormat);
             int stride = srcData.Stride;
             IntPtr Scan0 = srcData.Scan0;
 
             unsafe
             {
+                MainWindow.logger.log("[CalculateAverageColor] Getting color...");
                 byte* p = (byte*)(void*)Scan0;
 
                 for (int y = 0; y < height; y++)
@@ -133,7 +138,9 @@ namespace WinIsland
                 avgB = (int)(totals[0] / count);
             else
                 avgB = 255;
+            MainWindow.logger.log("[CalculateAverageColor] Color succesfully calculated, unlocking...");
             bm.UnlockBits(srcData);
+            MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" + Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " + Convert.ToByte(avgB));
             return System.Windows.Media.Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
         }
         public static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)

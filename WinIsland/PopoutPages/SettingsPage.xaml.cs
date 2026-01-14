@@ -31,12 +31,15 @@ namespace WinIsland.PopoutPages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            MainWindow.logger.log("Loading settings page...");
+
             abbrSlider.Value = settings.config.ambientBGBlur;
             blurEverywhere.IsChecked = settings.config.blurEverywhere;
 			abbrValueLabel.Content = (int)settings.config.ambientBGBlur + "px (Def: 40px)";
 			blurEverywhere.Click += blurEverywhere_Click;
             startupCheck.Click += StartupCheck_Click;
-            using(RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
+            MainWindow.logger.log("Checking if startup registry is correct...");
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run", true))
             {
                 if (key == null || key.GetValue("WinIsland") == null)
                 {
@@ -97,7 +100,7 @@ namespace WinIsland.PopoutPages
         private void reloadBG_Click(object sender, RoutedEventArgs e)
         {
             if (settings.thumbnail != null)
-                MainWindow.instance.renderBackground(settings.thumbnail);
+                MainWindow.instance.renderGradient(settings.thumbnail);
         }
     }
 }

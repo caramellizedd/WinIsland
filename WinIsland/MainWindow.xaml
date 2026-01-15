@@ -103,7 +103,7 @@
                     <Grid ClipToBounds="True" x:Name="gridBG" Opacity="0.6"/>
                     <Grid ClipToBounds="True" x:Name="gridBG2" Opacity="0.6"/>
                 </Grid>
-                <Grid x:Name="miniIslandGrid">
+				<Grid x:Name="miniIslandGrid" MouseUp="Border_MouseUp">
                     <!--Clock-->
                     <Label x:Name="clock" Margin="15,6,0,0" FontSize="16" FontFamily="Segoe UI"/>
                     <!--Battery-->

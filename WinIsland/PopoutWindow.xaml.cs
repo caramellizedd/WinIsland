@@ -5,6 +5,8 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+using iNKORE.UI.WPF.Modern.Controls.Helpers;
+using iNKORE.UI.WPF.Modern.Helpers.Styles;
 using WinIsland.PopoutPages;
 using static WinIsland.PInvoke;
 using MessageBox = System.Windows.MessageBox;
@@ -19,6 +21,8 @@ namespace WinIsland
         public PopoutWindow()
         {
             InitializeComponent();
+            if (Helper.isWindows11())
+                WindowHelper.SetSystemBackdropType(this, BackdropType.Tabbed);
             versionWatermark.Content = "WinIsland " + StaticStrings.longVersion;
         }
         private void closeButton_Click(object sender, RoutedEventArgs e)

@@ -40,8 +40,12 @@ namespace WinIsland.IslandPages
                 {
                     try
                     {
-                        HttpResponseMessage response = await client.GetAsync("https://api.open-meteo.com/v1/forecast?latitude=-7.9797&longitude=112.6304&daily=weather_code&timezone=auto");
-                        MainWindow.logger.log("Getting weather information from https://api.open-meteo.com/v1/forecast?latitude=-7.9797&longitude=112.6304&daily=weather_code&timezone=auto");
+                        // The location are hardcoded for testing purposes (Malang, Indonesia)
+                        // TODO: Make the user be able to select their own city/country.
+                        string url = "https://api.open-meteo.com/v1/forecast?latitude=-7.9797&longitude=112.6304&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset&current=temperature_2m,is_day,weather_code&timezone=auto";
+
+						HttpResponseMessage response = await client.GetAsync(url);
+                        MainWindow.logger.log("Getting weather information from " + url);
                         string resp = await response.Content.ReadAsStringAsync();
                         MainWindow.logger.log("Received weather information: " + resp);
 
@@ -89,6 +93,11 @@ namespace WinIsland.IslandPages
         {
             public string[] time { get; set; }
             public string[] weather_code { get; set; }
-        }
+            public double[] temperature_2m_max { get; set; }
+			public double[] temperature_2m_min { get; set; }
+            public double[] uv_index_clear_sky_max { get; set; }
+			public string[] sunrise { get; set; }
+			public string[] sunset { get; set; }
+		}
     }
 }

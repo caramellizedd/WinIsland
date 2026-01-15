@@ -11,9 +11,12 @@
 
     <Grid Background="Cyan" Margin="0,35,0,0">
         <StackPanel>
-            <Label x:Name="elevation"/>
+            <Label x:Name="elevation" Visibility="Hidden"/>
+
             <Label x:Name="time"/>
             <Label x:Name="weathercodes"/>
+
+
         </StackPanel>
     </Grid>
 </Page>

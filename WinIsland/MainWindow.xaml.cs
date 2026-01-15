@@ -148,8 +148,8 @@ namespace WinIsland
         private void initPages()
         {
             // Load default pages
-            islandContent.Navigate(new MusPlayer());
-            //islandContent.Navigate(new Weather());
+            //islandContent.Navigate(new MusPlayer());
+            islandContent.Navigate(new Weather());
         }
         private void triggerSystemEvent(int id, double volume = 0)
         {

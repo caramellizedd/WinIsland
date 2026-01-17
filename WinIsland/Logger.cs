@@ -9,7 +9,6 @@ namespace WinIsland
     public class Logger
     {
         string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_Latest.log";
-        DateTime currentDateTime = DateTime.Now;
         public Logger()
         {
             StartFileWriter();
@@ -37,6 +36,7 @@ namespace WinIsland
         }
         public void log(string message) 
         {
+            DateTime currentDateTime = DateTime.Now;
             Console.WriteLine("[" + currentDateTime + "] " + message);
             using (var stream = File.Open(path, FileMode.Append, FileAccess.Write, FileShare.ReadWrite))
             {

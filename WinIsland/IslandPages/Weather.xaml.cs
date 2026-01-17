@@ -42,7 +42,9 @@ namespace WinIsland.IslandPages
                     {
                         // The location are hardcoded for testing purposes (Malang, Indonesia)
                         // TODO: Make the user be able to select their own city/country.
-                        string url = "https://api.open-meteo.com/v1/forecast?latitude=-7.9797&longitude=112.6304&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset&current=temperature_2m,is_day,weather_code&timezone=auto";
+                        string lat = "-7.9797"; // Latitude
+						string lon = "112.6304"; // Longitude
+                        string url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset&current=temperature_2m,is_day,weather_code&timezone=auto";
 
 						HttpResponseMessage response = await client.GetAsync(url);
                         MainWindow.logger.log("Getting weather information from " + url);
@@ -51,7 +53,14 @@ namespace WinIsland.IslandPages
 
                         MainWindow.logger.log("Attempting to make JSON...");
                         JsonNode node = JsonNode.Parse(resp);
-                        Dispatcher.Invoke(() =>
+						MainWindow.logger.log("Converted to JsonNode successfully!");
+                        if (resp.Contains("\"reason\":"))
+                        {
+							MainWindow.logger.log("Failed !");
+                            MainWindow.logger.log(node["reason"].ToString());
+                            return;
+						}
+						Dispatcher.Invoke(() =>
                         {
                             parseWeather(node);
                         });
@@ -67,28 +76,44 @@ namespace WinIsland.IslandPages
         }
         private void parseWeather(JsonNode node)
         {
-            double elevationD = node["elevation"].GetValue<Double>();
+			MainWindow.logger.log("Parsing JsonNode");
+			double elevationD = node["elevation"].GetValue<Double>();
             daily daily = JsonConvert.DeserializeObject<daily>(node["daily"].ToJsonString());
+			current current = JsonConvert.DeserializeObject<current>(node["current"].ToJsonString());
+			MainWindow.logger.log("Parsed succesfully!");
 
-            elevation.Content = elevationD;
+            List<WeatherDataTile> weatherTiles = new List<WeatherDataTile>();
 
-            foreach(string str in daily.time)
+            for(int i = 0; i <= 6; i++)
             {
-                if (time.Content == "")
-                    time.Content = str;
-                else
-                    time.Content = time.Content + " | " + str;
-            }
-
-            foreach (string str in daily.weather_code)
+                WeatherDataTile temp = new WeatherDataTile();
+                temp.imageURL = "";
+                temp.tempmax = daily.temperature_2m_max[i];
+                temp.tempmin = daily.temperature_2m_min[i];
+                temp.sunrise = daily.sunrise[i];
+				temp.sunset = daily.sunset[i];
+                weatherTiles.Add(temp);
+			}
+            int j = 0;
+            foreach (WeatherDataTile tile in weatherTiles)
             {
-                if (weathercodes.Content == "")
-                    weathercodes.Content = str;
-                else
-                    weathercodes.Content = weathercodes.Content + " | " + str;
-            }
-
-        }
+                MainWindow.logger.log("Tile " + j + " has these data.");
+                MainWindow.logger.log("ImageURL: " + tile.imageURL);
+				MainWindow.logger.log("Max Temp: " + tile.tempmax);
+				MainWindow.logger.log("Min Temp: " + tile.tempmin);
+				MainWindow.logger.log("Sunrise: " + tile.sunrise);
+				MainWindow.logger.log("Sunset: " + tile.sunset);
+                j++;
+			}
+		}
+        public class WeatherDataTile
+        {
+            public string imageURL { get; set; }
+            public double tempmax { get; set; }
+			public double tempmin { get; set; }
+            public string sunrise { get; set; }
+            public string sunset { get; set; }
+		}
         public class daily
         {
             public string[] time { get; set; }
@@ -99,5 +124,14 @@ namespace WinIsland.IslandPages
 			public string[] sunrise { get; set; }
 			public string[] sunset { get; set; }
 		}
-    }
+
+		public class current
+		{
+			public string time { get; set; }
+			public double interval { get; set; }
+			public double temperature_2m { get; set; }
+			public double is_day { get; set; }
+			public double weather_code { get; set; }
+		}
+	}
 }

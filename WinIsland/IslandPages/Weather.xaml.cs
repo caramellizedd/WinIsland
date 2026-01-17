@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Imaging;
 using System.Globalization;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -31,12 +33,13 @@ namespace WinIsland.IslandPages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
-            if (Settings.instance.lastWeatherInfo != null)
+            if (Settings.instance.lastWeatherTiles != null)
             {
                 waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
                 waitLabel.Margin = new Thickness(0, 0, 0, 25);
                 waitLabel.Content = "Refreshing weather information...";
-                parseWeather(Settings.instance.lastWeatherInfo);
+                foreach(WeatherDataTile tile in Settings.instance.lastWeatherTiles)
+                    WeatherListView.Items.Add(tile);
             }
             else
             {
@@ -74,9 +77,9 @@ namespace WinIsland.IslandPages
                             MainWindow.logger.log(node["reason"].ToString());
                             return;
 						}
-						Dispatcher.Invoke(() =>
+                        parseWeather(node);
+                        Dispatcher.Invoke(() =>
                         {
-                            parseWeather(node);
                             waitLabel.Visibility = Visibility.Hidden;
                         });
                     }
@@ -91,7 +94,13 @@ namespace WinIsland.IslandPages
         }
         private void parseWeather(JsonNode node)
         {
-			MainWindow.logger.log("Parsing JsonNode");
+            MainWindow.logger.log("Reading Icon Json Data...");
+            string jsonIconPath = AppContext.BaseDirectory + "\\Assets\\weather.json";
+            string iconJsonData = File.ReadAllText(jsonIconPath);
+            JsonNode icons = JsonNode.Parse(iconJsonData);
+            MainWindow.logger.log("Succesfully read Icon Json Data.");
+
+            MainWindow.logger.log("Parsing JsonNode");
 			double elevationD = node["elevation"].GetValue<Double>();
             daily daily = JsonConvert.DeserializeObject<daily>(node["daily"].ToJsonString());
 			current current = JsonConvert.DeserializeObject<current>(node["current"].ToJsonString());
@@ -106,7 +115,10 @@ namespace WinIsland.IslandPages
                 string dateString = daily.time[i];
                 DayOfWeek day = GetDayOfWeekFromDateString(dateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 temp.dayOfWeek = day.ToString();
-                temp.imageURL = "";
+                //temp.imageURL = "";
+                temp.image = Helper.ConvertToImageSource(Helper.getImageFromUrl(icons[daily.weather_code[i]]["day"]["image"].ToString(), ImageFormat.Png));
+                MainWindow.logger.log("Downloading weather icons for code " + daily.weather_code[i] + " from " + icons[daily.weather_code[i]]["day"]["image"].ToString());
+                temp.weatherCode = daily.weather_code[i];
                 temp.tempmax = (int)daily.temperature_2m_max[i] + "° Max";
                 temp.tempmin = (int)daily.temperature_2m_min[i] + "° Min";
                 string[] sunrise = daily.sunrise[i].Split("T");
@@ -114,22 +126,28 @@ namespace WinIsland.IslandPages
                 temp.sunrise = sunrise[1];
 				temp.sunset = sunset[1];
                 weatherTiles.Add(temp);
-			}
-            WeatherListView.Items.Clear();
+            }
+            Settings.instance.lastWeatherTiles = weatherTiles;
+            Dispatcher.Invoke(() =>
+            {
+                WeatherListView.Items.Clear();
+            });
             int j = 0;
             foreach (WeatherDataTile tile in weatherTiles)
             {
                 MainWindow.logger.log("Tile " + j + " has these data.");
-                MainWindow.logger.log("ImageURL: " + tile.imageURL);
-				MainWindow.logger.log("Max Temp: " + tile.tempmax);
+                MainWindow.logger.log("Weather Code: " + tile.weatherCode);
+                MainWindow.logger.log("Max Temp: " + tile.tempmax);
 				MainWindow.logger.log("Min Temp: " + tile.tempmin);
 				MainWindow.logger.log("Sunrise: " + tile.sunrise);
 				MainWindow.logger.log("Sunset: " + tile.sunset);
                 j++;
 
-                WeatherListView.Items.Add(tile);
+                Dispatcher.Invoke(() =>
+                {
+                    WeatherListView.Items.Add(tile);
+                });
 			}
-            Settings.instance.lastWeatherInfo = node;
         }
         public DayOfWeek GetDayOfWeekFromDateString(string dateString, string format, CultureInfo cultureInfo)
         {
@@ -147,8 +165,9 @@ namespace WinIsland.IslandPages
         }
         public class WeatherDataTile
         {
+            public string weatherCode { get; set; }
+            public BitmapImage image { get; set;}
             public string dayOfWeek { get; set; }
-            public string imageURL { get; set; }
             public string tempmax { get; set; }
 			public string tempmin { get; set; }
             public string sunrise { get; set; }

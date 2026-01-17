@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using WinIsland.IslandPages;
 
 namespace WinIsland
 {
@@ -22,7 +23,7 @@ namespace WinIsland
         public string lastSongName = "";
         public Bitmap lastThumbnail;
 
-        public JsonNode lastWeatherInfo;
+        public List<Weather.WeatherDataTile> lastWeatherTiles;
 
         public SettingsConfig config;
 

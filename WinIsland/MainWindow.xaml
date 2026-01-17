@@ -121,8 +121,15 @@
                 <!--Settings Button-->
                 <Button x:Name="settingsButton" Click="settingsButton_Click" Content="&#xE713;" Height="24" Width="24" Margin="0,5,10,0" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15" BorderThickness="0" HorizontalAlignment="Right" VerticalAlignment="Top"/>
                 <!--Main Content-->
-				<Frame x:Name="islandContent" MouseUp="Border_MouseUp" NavigationUIVisibility="Hidden">
-                </Frame>
+                <Grid x:Name="contentFrame" ClipToBounds="True">
+                    <Frame x:Name="islandContent" MouseUp="Border_MouseUp" NavigationUIVisibility="Hidden" Navigated="islandContent_Navigated" Navigating="islandContent_Navigating">
+                        <Frame.RenderTransform>
+                            <TranslateTransform x:Name="frameAnimation"/>
+                        </Frame.RenderTransform>
+                    </Frame>
+                    <Button x:Name="previousPageButton" Content="&#xEC52;" Height="50" Width="25" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="previousPageButton_Click" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15"/>
+                    <Button x:Name="nextPageButton" Content="&#xEbE7;" Height="50" Width="25" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" Click="nextPageButton_Click" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15"/>
+                </Grid>
             </Grid>
         </Border>
     </Grid>

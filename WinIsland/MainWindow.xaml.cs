@@ -94,6 +94,7 @@ namespace WinIsland
             systemEventSmall.Visibility = Visibility.Hidden;
             sysEventTimer.Interval = 3000;
             islandContent.Visibility = Visibility.Hidden;
+            contentFrame.Visibility = Visibility.Hidden;
             logger.log("Setting UI visibility.");
 
             logger.log("Main Island has been initialized.");
@@ -148,8 +149,8 @@ namespace WinIsland
         private void initPages()
         {
             // Load default pages
-            //islandContent.Navigate(new MusPlayer());
-            islandContent.Navigate(new Weather());
+            islandContent.Navigate(new MusPlayer());
+            //islandContent.Navigate(new Weather());
         }
         private void triggerSystemEvent(int id, double volume = 0)
         {
@@ -698,8 +699,8 @@ namespace WinIsland
             {
                 mediaProperties = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
                 sessionManager.GetCurrentSession().TryTogglePlayPauseAsync();
-                Console.WriteLine("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title);
-                Console.WriteLine($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
+                MainWindow.logger.log(String.Format("{0} - {1}", mediaProperties?.Artist, mediaProperties?.Title));
+                MainWindow.logger.log($"Status: {sessionManager.GetCurrentSession().GetPlaybackInfo().PlaybackStatus}");
             }catch(NullReferenceException nfe)
             {
                 toggleMediaControls(false);
@@ -723,6 +724,7 @@ namespace WinIsland
                     //bg.Visibility = Visibility.Visible;
                     gridBG.Visibility = Visibility.Visible;
                     islandContent.Visibility = Visibility.Visible;
+                    contentFrame.Visibility = Visibility.Visible;
                     gridBG2.Visibility = Visibility.Visible;
                     islandMini.Visibility = Visibility.Collapsed;
                 });
@@ -734,6 +736,7 @@ namespace WinIsland
             gridBG.Visibility = Visibility.Collapsed;
             gridBG2.Visibility = Visibility.Collapsed;
             islandContent.Visibility = Visibility.Hidden;
+            contentFrame.Visibility = Visibility.Hidden;
             islandMini.Visibility = Visibility.Visible;
             ignoreMouseEvent = false;
             AnimateWindowSize(351, 71, (int)firstPos, true, 1);
@@ -805,6 +808,103 @@ namespace WinIsland
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             
+        }
+        bool prevAnim = false;
+        private void previousPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            Navigate(islandContent.Content is MusPlayer ? new Weather() : new MusPlayer(), true);
+            
+        }
+
+        private void nextPageButton_Click(object sender, RoutedEventArgs e)
+        {
+            Navigate(islandContent.Content is Weather ? new MusPlayer() : new Weather(), false);
+        }
+        public void Navigate(object content, bool previous)
+        {
+            prevAnim = previous;
+            DoubleAnimation ta = new DoubleAnimation
+            {
+                From = 0,
+                To = previous ? -ActualWidth : ActualWidth,
+                Duration = new TimeSpan(0, 0, 0, 0, 250),
+                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseIn }
+            };
+
+            ta.Completed += (sender, e) =>
+            {
+                islandContent.Navigate(content);
+            };
+
+
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 0,
+                    To = 20,
+                    Duration = new TimeSpan(0, 0, 0, 0, 300),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+                BlurEffect be = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+
+                islandContent.Effect = be;
+            }
+
+            frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
+
+        }
+
+        private void islandContent_Navigated(object sender, NavigationEventArgs e)
+        {
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 20,
+                    To = 0,
+                    Duration = new TimeSpan(0, 0, 0, 0, 350),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+
+                BlurEffect be = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+
+                islandContent.Effect = be;
+            }
+            prevAnim = false;
+        }
+
+        private void islandContent_Navigating(object sender, NavigatingCancelEventArgs e)
+        {
+            DoubleAnimation ta = new DoubleAnimation
+            {
+                From = prevAnim ? ActualWidth : -ActualWidth,
+                To = 0,
+                Duration = new TimeSpan(0, 0, 0, 0, 500),
+                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseOut }
+            };
+            if (Settings.instance.config.blurEverywhere)
+            {
+                DoubleAnimation blur = new DoubleAnimation
+                {
+                    From = 20,
+                    To = 0,
+                    Duration = new TimeSpan(0, 0, 0, 0, 250),
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
+                };
+
+                BlurEffect be = new BlurEffect();
+                be.RenderingBias = RenderingBias.Performance;
+                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
+
+                islandContent.Effect = be;
+            }
+
+            frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
         }
     }
 }

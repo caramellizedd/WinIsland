@@ -76,8 +76,15 @@ namespace WinIsland.IslandPages
                         waitForMD.Stop();
                         return;
                     }
+                    MainWindow.logger.log("Requesting Session manager...");
                     mw.sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
-                    if (mw.sessionManager == null) return;
+                    if (mw.sessionManager == null) {
+                        MainWindow.logger.log("Unable to get session manager!");
+                        MainWindow.logger.log("Reason: Session manager is NULL!");
+                        return;
+                    }
+                    MainWindow.logger.log("Got session manager!");
+                    MainWindow.logger.log("Setting up Session Manager events...");
                     mw.sessionManager.SessionsChanged += SessionManager_SessionsChanged;
                     mw.sessionManager.CurrentSessionChanged += SessionManager_CurrentSessionChanged;
                     mw.sessionManager.GetCurrentSession().PlaybackInfoChanged += MainWindow_PlaybackInfoChanged;
@@ -101,8 +108,8 @@ namespace WinIsland.IslandPages
                     mw.sessionManager.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
                     mw.sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
                 }
-                
 
+                getMusicInfo(mw.sessionManager.GetCurrentSession());
             }
             catch (NullReferenceException nfe)
             {
@@ -251,10 +258,15 @@ namespace WinIsland.IslandPages
         }
         private async void getMusicInfo(GlobalSystemMediaTransportControlsSession sender)
         {
+            MainWindow.logger.log("Attempting to get Music Information from Session...");
             try
             {
                 var songInfo = await sender.TryGetMediaPropertiesAsync();
-                if (songInfo == null) return;
+                if (songInfo == null) {
+                    MainWindow.logger.log("songInfo is null, aborting...");
+                    return; 
+                };
+                MainWindow.logger.log("songInfo is NOT null, continuing...");
                 this.Dispatcher.Invoke(() =>
                 {
                     songTitle.Content = songInfo.Title;

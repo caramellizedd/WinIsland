@@ -27,6 +27,12 @@ namespace WinIsland.IslandPages
         public MusPlayer()
         {
             InitializeComponent();
+            if(Settings.instance.lastThumbnail != null)
+            {
+                songTitle.Content = Settings.instance.lastSongName;
+                songArtist.Content = Settings.instance.lastArtist;
+                songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
+            }
             getMediaSession();
             Tick.Interval = new TimeSpan(0, 0, 0, 0, 1);
             Tick.Tick += (e, a) =>
@@ -59,7 +65,11 @@ namespace WinIsland.IslandPages
             };
             Tick.Start();
         }
-        private async void getMediaSession()
+        public void getMediaSession()
+        {
+            new Thread(startGetSessionThread).Start();
+        }
+        private async void startGetSessionThread()
         {
             MainWindow.logger.log("Getting media session...");
             Task.Delay(1000).Wait();
@@ -273,6 +283,9 @@ namespace WinIsland.IslandPages
                     songArtist.Content = songInfo.Artist;
                     songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
                     Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
+                    Settings.instance.lastThumbnail = Helper.GetBitmap(songInfo.Thumbnail);
+                    Settings.instance.lastArtist = songInfo.Artist;
+                    Settings.instance.lastSongName = songInfo.Title;
                     if (Helper.GetBitmap(songInfo.Thumbnail) != null)
                     {
                         mw.renderGradient(Settings.instance.thumbnail);

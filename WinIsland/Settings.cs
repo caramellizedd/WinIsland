@@ -17,6 +17,10 @@ namespace WinIsland
         public Bitmap thumbnail;
         public static Settings instance;
 
+        public string lastArtist = "";
+        public string lastSongName = "";
+        public Bitmap lastThumbnail;
+
         public SettingsConfig config;
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_config.cfg";

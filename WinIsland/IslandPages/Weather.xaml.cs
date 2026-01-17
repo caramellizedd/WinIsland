@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -63,6 +64,7 @@ namespace WinIsland.IslandPages
 						Dispatcher.Invoke(() =>
                         {
                             parseWeather(node);
+                            waitLabel.Visibility = Visibility.Hidden;
                         });
                     }
                     catch(Exception err)
@@ -86,12 +88,18 @@ namespace WinIsland.IslandPages
 
             for(int i = 0; i <= 6; i++)
             {
+                if (i == 0) continue;
                 WeatherDataTile temp = new WeatherDataTile();
+                string dateString = daily.time[i];
+                DayOfWeek day = GetDayOfWeekFromDateString(dateString, "yyyy-MM-dd", CultureInfo.InvariantCulture);
+                temp.dayOfWeek = day.ToString();
                 temp.imageURL = "";
-                temp.tempmax = daily.temperature_2m_max[i];
-                temp.tempmin = daily.temperature_2m_min[i];
-                temp.sunrise = daily.sunrise[i];
-				temp.sunset = daily.sunset[i];
+                temp.tempmax = (int)daily.temperature_2m_max[i] + "° Max";
+                temp.tempmin = (int)daily.temperature_2m_min[i] + "° Min";
+                string[] sunrise = daily.sunrise[i].Split("T");
+                string[] sunset = daily.sunset[i].Split("T");
+                temp.sunrise = sunrise[1];
+				temp.sunset = sunset[1];
                 weatherTiles.Add(temp);
 			}
             int j = 0;
@@ -104,13 +112,30 @@ namespace WinIsland.IslandPages
 				MainWindow.logger.log("Sunrise: " + tile.sunrise);
 				MainWindow.logger.log("Sunset: " + tile.sunset);
                 j++;
+
+                WeatherListView.Items.Add(tile);
 			}
 		}
+        public DayOfWeek GetDayOfWeekFromDateString(string dateString, string format, CultureInfo cultureInfo)
+        {
+            DateTime dateValue;
+            // Use TryParseExact for safer parsing to avoid exceptions if the format is incorrect
+            if (DateTime.TryParseExact(dateString, format, cultureInfo, DateTimeStyles.None, out dateValue))
+            {
+                return dateValue.DayOfWeek;
+            }
+            else
+            {
+                // Handle the error case (e.g., throw an exception, return a default value, or show an error in UI)
+                throw new FormatException($"Unable to convert {dateString} to a valid date using format {format}.");
+            }
+        }
         public class WeatherDataTile
         {
+            public string dayOfWeek { get; set; }
             public string imageURL { get; set; }
-            public double tempmax { get; set; }
-			public double tempmin { get; set; }
+            public string tempmax { get; set; }
+			public string tempmin { get; set; }
             public string sunrise { get; set; }
             public string sunset { get; set; }
 		}

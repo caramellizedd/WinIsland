@@ -3,16 +3,34 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
       xmlns:local="clr-namespace:WinIsland.IslandPages"
       mc:Ignorable="d" 
       Loaded="Page_Loaded"
       d:DesignHeight="370" d:DesignWidth="872"
       Title="Weather">
 
-    <Grid Background="Cyan" Margin="0,35,0,0">
-        <StackPanel>
-			<ListView>
-            </ListView>
-		</StackPanel>
+    <Grid Background="Transparent" Margin="0,35,0,0">
+        <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <ListBox Background="Transparent" x:Name="WeatherListView" d:ItemsSource="{d:SampleData ItemCount=7}" HorizontalAlignment="Stretch" IsEnabled="False">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Label Content="{Binding dayOfWeek}" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                        <StackPanel Orientation="Vertical" Margin="0,25,0,0" HorizontalAlignment="Stretch">
+                            <Label Content="{Binding tempmax}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                            <Label Content="{Binding tempmin}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                            <Label Content="{Binding sunrise}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                            <Label Content="{Binding sunset}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
     </Grid>
 </Page>

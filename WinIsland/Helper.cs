@@ -81,6 +81,7 @@ namespace WinIsland
         }
         public static System.Windows.Media.Color CalculateAverageColor(Bitmap bm)
         {
+            if (bm == null) return System.Windows.Media.Color.FromRgb(0,0,0);
             MainWindow.logger.log("Getting average color...");
             int width = bm.Width;
             int height = bm.Height;

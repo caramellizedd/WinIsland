@@ -201,7 +201,11 @@ namespace WinIsland
             logger.log("Getting gradient...");
             Color color = Helper.CalculateAverageColor(bmp);
             if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
+            {
                 color = Helper.Lighten(color, 1f);
+                gridBG.Visibility = Visibility.Collapsed;
+                gridBG2.Visibility = Visibility.Collapsed;
+            }
             LinearGradientBrush gradientBrush = new LinearGradientBrush(color, Color.FromArgb(0, 0, 0, 0), new Point(0.0, 1), new Point(0.5, 1));
             LinearGradientBrush gradientBrush2 = new LinearGradientBrush(Color.FromArgb(0, 0, 0, 0), color, new Point(0.5, 1), new Point(1, 1));
             gridBG.Background = gradientBrush;
@@ -570,6 +574,7 @@ namespace WinIsland
             isAnimating = true;
             double dpiScale = Helper.GetDpiScale(this);
             ThicknessAnimation ta;
+
             if (isExpanded)
             {
                 ta = new ThicknessAnimation
@@ -722,10 +727,18 @@ namespace WinIsland
                 this.Dispatcher.Invoke(() =>
                 {
                     //bg.Visibility = Visibility.Visible;
-                    gridBG.Visibility = Visibility.Visible;
                     islandContent.Visibility = Visibility.Visible;
                     contentFrame.Visibility = Visibility.Visible;
-                    gridBG2.Visibility = Visibility.Visible;
+                    if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Dark)
+                    {
+                        gridBG.Visibility = Visibility.Visible;
+                        gridBG2.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        gridBG.Visibility = Visibility.Collapsed;
+                        gridBG2.Visibility = Visibility.Collapsed;
+                    }
                     islandMini.Visibility = Visibility.Collapsed;
                 });
             }).Start();

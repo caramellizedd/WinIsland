@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 
 namespace WinIsland
@@ -20,6 +21,8 @@ namespace WinIsland
         public string lastArtist = "";
         public string lastSongName = "";
         public Bitmap lastThumbnail;
+
+        public JsonNode lastWeatherInfo;
 
         public SettingsConfig config;
 

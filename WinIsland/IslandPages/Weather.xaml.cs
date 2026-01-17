@@ -31,6 +31,19 @@ namespace WinIsland.IslandPages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            if (Settings.instance.lastWeatherInfo != null)
+            {
+                waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
+                waitLabel.Margin = new Thickness(0, 0, 0, 25);
+                waitLabel.Content = "Refreshing weather information...";
+                parseWeather(Settings.instance.lastWeatherInfo);
+            }
+            else
+            {
+                waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Center;
+                waitLabel.Margin = new Thickness(0, 0, 0, 0);
+                waitLabel.Content = "Loading weather information...";
+            }
             fetchWeather();
         }
         private void fetchWeather()
@@ -102,6 +115,7 @@ namespace WinIsland.IslandPages
 				temp.sunset = sunset[1];
                 weatherTiles.Add(temp);
 			}
+            WeatherListView.Items.Clear();
             int j = 0;
             foreach (WeatherDataTile tile in weatherTiles)
             {
@@ -115,7 +129,8 @@ namespace WinIsland.IslandPages
 
                 WeatherListView.Items.Add(tile);
 			}
-		}
+            Settings.instance.lastWeatherInfo = node;
+        }
         public DayOfWeek GetDayOfWeekFromDateString(string dateString, string format, CultureInfo cultureInfo)
         {
             DateTime dateValue;

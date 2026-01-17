@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.RightsManagement;
 using System.Text;
@@ -143,6 +144,18 @@ namespace WinIsland
             bm.UnlockBits(srcData);
             MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" + Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " + Convert.ToByte(avgB));
             return System.Windows.Media.Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
+        }
+        public static Bitmap getImageFromUrl(string imageUrl, ImageFormat format)
+        {
+            WebClient client = new WebClient();
+            Stream stream = client.OpenRead(imageUrl);
+            Bitmap bitmap = new Bitmap(stream);
+
+            stream.Flush();
+            stream.Close();
+            client.Dispose();
+
+            return bitmap;
         }
         public static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)
         {

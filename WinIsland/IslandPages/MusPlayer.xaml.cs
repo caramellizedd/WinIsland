@@ -33,6 +33,7 @@ namespace WinIsland.IslandPages
                 songArtist.Content = Settings.instance.lastArtist;
                 songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
             }
+            MainWindow.instance.busyRing.Visibility = Visibility.Visible;
             getMediaSession();
             Tick.Interval = new TimeSpan(0, 0, 0, 0, 1);
             Tick.Tick += (e, a) =>
@@ -72,6 +73,10 @@ namespace WinIsland.IslandPages
         private async void startGetSessionThread()
         {
             MainWindow.logger.log("Getting media session...");
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Visible;
+            });
             Task.Delay(1000).Wait();
             mw.sessionManager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync();
             if(mw.sessionManager == null)
@@ -130,9 +135,17 @@ namespace WinIsland.IslandPages
                 MainWindow.logger.log("NullReferenceException");
                 MainWindow.logger.log(nfe.StackTrace);
             }
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Collapsed;
+            });
         }
         private async void playPauseAsync()
         {
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Visible;
+            });
             try
             {
                 mw.mediaProperties = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
@@ -158,6 +171,10 @@ namespace WinIsland.IslandPages
                 MainWindow.logger.log("NullReferenceException");
                 MainWindow.logger.log(nfe.StackTrace);
             }
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Collapsed;
+            });
         }
         private void toggleMediaControls(bool value, bool inAnotherThread = true)
         {
@@ -268,6 +285,10 @@ namespace WinIsland.IslandPages
         }
         private async void getMusicInfo(GlobalSystemMediaTransportControlsSession sender)
         {
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Visible;
+            });
             MainWindow.logger.log("Attempting to get Music Information from Session...");
             try
             {
@@ -301,6 +322,10 @@ namespace WinIsland.IslandPages
             {
 
             }
+            Dispatcher.Invoke(() =>
+            {
+                MainWindow.instance.busyRing.Visibility = Visibility.Hidden;
+            });
         }
         // Button Events
         private async void beforeRewind_Click(object sender, RoutedEventArgs e)

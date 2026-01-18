@@ -129,6 +129,7 @@
                     </Frame>
                     <Button x:Name="previousPageButton" Content="&#xEC52;" Height="50" Width="25" Margin="10,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" Click="previousPageButton_Click" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15"/>
                     <Button x:Name="nextPageButton" Content="&#xEbE7;" Height="50" Width="25" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" Click="nextPageButton_Click" FontFamily="./Fonts/#Segoe Fluent Icons" FontSize="15"/>
+                    <ui:ProgressRing x:Name="busyRing" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="10"/>
                 </Grid>
             </Grid>
         </Border>

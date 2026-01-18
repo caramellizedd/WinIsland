@@ -12,7 +12,7 @@
 
     <Grid Background="Transparent" Margin="0,35,0,0">
         <Image x:Name="test"/>
-        <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
         <ListBox Background="Transparent" x:Name="WeatherListView" d:ItemsSource="{d:SampleData ItemCount=7}" HorizontalAlignment="Stretch" IsEnabled="False">
             <ListBox.ItemsPanel>
                 <ItemsPanelTemplate>

@@ -53,7 +53,11 @@ namespace WinIsland.IslandPages
         {
             new Thread(async () =>
             {
-                using(HttpClient client = new HttpClient())
+                Dispatcher.Invoke(() =>
+                {
+                    MainWindow.instance.busyRing.Visibility = Visibility.Visible;
+                });
+                using (HttpClient client = new HttpClient())
                 {
                     try
                     {
@@ -61,20 +65,38 @@ namespace WinIsland.IslandPages
                         // TODO: Make the user be able to select their own city/country.
                         string lat = "-7.9797"; // Latitude
 						string lon = "112.6304"; // Longitude
-                        string url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset&current=temperature_2m,is_day,weather_code&timezone=auto";
-
-						HttpResponseMessage response = await client.GetAsync(url);
+                        string url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon +
+                        "&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset,apparent_temperature_min,apparent_temperature_max" +
+                        "&current=temperature_2m,is_day,weather_code,apparent_temperature" +
+                        "&timezone=auto";
+                        Dispatcher.Invoke(() =>
+                        {
+                            waitLabel.Content = "Loading weather information...\nDownloading weather data...";
+                        });
+                        HttpResponseMessage response = await client.GetAsync(url);
                         MainWindow.logger.log("Getting weather information from " + url);
                         string resp = await response.Content.ReadAsStringAsync();
                         MainWindow.logger.log("Received weather information: " + resp);
 
                         MainWindow.logger.log("Attempting to make JSON...");
                         JsonNode node = JsonNode.Parse(resp);
-						MainWindow.logger.log("Converted to JsonNode successfully!");
+                        
+                        Dispatcher.Invoke(() =>
+                        {
+                            waitLabel.Content = "Loading weather information...\nParsing weather data...";
+                        });
+
+                        MainWindow.logger.log("Converted to JsonNode successfully!");
                         if (resp.Contains("\"reason\":"))
                         {
 							MainWindow.logger.log("Failed !");
                             MainWindow.logger.log(node["reason"].ToString());
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                waitLabel.Content = "Failed to get weather data!\nCheck logs for more information.";
+                            });
+                            
                             return;
 						}
                         parseWeather(node);
@@ -90,6 +112,10 @@ namespace WinIsland.IslandPages
                         MainWindow.logger.log(err.StackTrace);
                     }
                 }
+                Dispatcher.Invoke(() =>
+                {
+                    MainWindow.instance.busyRing.Visibility = Visibility.Collapsed;
+                });
             }).Start();
         }
         private void parseWeather(JsonNode node)
@@ -118,6 +144,12 @@ namespace WinIsland.IslandPages
                 //temp.imageURL = "";
                 temp.image = Helper.ConvertToImageSource(Helper.getImageFromUrl(icons[daily.weather_code[i]]["day"]["image"].ToString(), ImageFormat.Png));
                 MainWindow.logger.log("Downloading weather icons for code " + daily.weather_code[i] + " from " + icons[daily.weather_code[i]]["day"]["image"].ToString());
+                
+                Dispatcher.Invoke(() =>
+                {
+                    waitLabel.Content = "Loading weather information...\nDownloading weather icons for code " + daily.weather_code[i] + " from " + icons[daily.weather_code[i]]["day"]["image"].ToString();
+                });
+
                 temp.weatherCode = daily.weather_code[i];
                 temp.tempmax = (int)daily.temperature_2m_max[i] + "° Max";
                 temp.tempmin = (int)daily.temperature_2m_min[i] + "° Min";

@@ -77,23 +77,43 @@
                 </Style.Triggers>
             </Style>
         </Grid.Resources>
-        <Grid x:Name="thumbnailGlow" MaxWidth="200" MaxHeight="200" Margin="50,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
-            <Rectangle>
-                <Rectangle.Effect>
-                    <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
-                </Rectangle.Effect>
-                <Rectangle.Fill>
-                    <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
-                </Rectangle.Fill>
-            </Rectangle>
-            <Image x:Name="songThumbnail" Stretch="Uniform"/>
-        </Grid>
-        <Label x:Name="songTitle" Content="No song playing" FontSize="24" FontFamily="Segoe UI" Margin="298,89,89,199"/>
-        <Label x:Name="songArtist" Content="WinIsland by Charamellized" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" Margin="298,123,89,164"/>
-        <StackPanel Margin="394,216,266,0" Orientation="Horizontal">
-            <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
-            <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
-            <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+        <StackPanel Orientation="Horizontal">
+            <Grid x:Name="thumbnailGlow" MaxWidth="200" MaxHeight="200" Margin="50,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="floatAnim"/>
+                </Grid.RenderTransform>
+                <Grid.Triggers>
+                    <EventTrigger RoutedEvent="Loaded">
+                        <BeginStoryboard>
+                            <Storyboard>
+                                
+                            </Storyboard>
+                        </BeginStoryboard>
+                    </EventTrigger>
+                </Grid.Triggers>
+                <Rectangle>
+                    <Rectangle.Effect>
+                        <BlurEffect Radius="20" KernelType="Gaussian" RenderingBias="Performance"/>
+                    </Rectangle.Effect>
+                    <Rectangle.Fill>
+                        <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
+                    </Rectangle.Fill>
+                </Rectangle>
+                <Image x:Name="songThumbnail" Stretch="Uniform"/>
+            </Grid>
+            <StackPanel Margin="45,89,0,0" Orientation="Vertical" VerticalAlignment="Stretch">
+                <Label x:Name="songTitle" Content="No song playing" FontSize="24" Width="450" FontFamily="Segoe UI" />
+                <Label x:Name="songArtist" Content="WinIsland by Charamellized" Foreground="Gray" FontSize="16" FontFamily="Segoe UI"/>
+                <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0" Orientation="Vertical">
+                    <Slider x:Name="songProgress" ValueChanged="songProgress_ValueChanged" HorizontalAlignment="Stretch"/>
+                    <Label x:Name="songProgressLabel" Content="curVal/maxVal" HorizontalAlignment="Center"/>
+                </StackPanel>
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0" Orientation="Horizontal">
+                    <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+                    <Button x:Name="playPause" Click="playPause_Click" Content="&#xE102;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+                    <Button x:Name="afterForward" Click="afterForward_Click" Content="&#xE101;" Height="50" Width="50" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>
+                </StackPanel>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Threading;
 using Windows.Media.Control;
+using Windows.Media.Playback;
 using WinIsland.Properties;
 
 namespace WinIsland.IslandPages
@@ -19,6 +20,7 @@ namespace WinIsland.IslandPages
     public partial class MusPlayer : Page
     {
         private bool mediaSessionEmpty = true; // Check if mediaSession is empty or equal to NULL.
+        private bool sliderChangeIgnore = false;
 
         private DispatcherTimer waitForMD = new DispatcherTimer();
         private DispatcherTimer Tick = new DispatcherTimer();
@@ -256,7 +258,16 @@ namespace WinIsland.IslandPages
         }
         private async void MainWindow_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
         {
-            MainWindow.logger.log("MainWindow_TimelinePropertiesChanged Event Called");
+            // Logging this using the regular logger is NOT a good idea because it can fill up the user's drive with useless logs in the log file.
+            //MainWindow.logger.log(sender.GetTimelineProperties().Position.ToString() + "/" + sender.GetTimelineProperties().MaxSeekTime.ToString());
+            Dispatcher.Invoke(() =>
+            {
+                sliderChangeIgnore = true;
+                songProgress.Maximum = sender.GetTimelineProperties().MaxSeekTime.Ticks;
+                songProgress.Value = sender.GetTimelineProperties().Position.Ticks;
+                songProgressLabel.Content = sender.GetTimelineProperties().Position.ToString(@"hh\:mm\:ss") + " / " + sender.GetTimelineProperties().MaxSeekTime.ToString(@"hh\:mm\:ss");
+                sliderChangeIgnore = false;
+            });
         }
         private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
@@ -355,6 +366,16 @@ namespace WinIsland.IslandPages
             {
 
             }
+        }
+
+        private async void songProgress_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+        {
+            if (mw.sessionManager != null && !sliderChangeIgnore && e.NewValue != e.OldValue)
+                // Some programs does not support this!
+                // Do not accept bugs related to applications not changing their timeline with TryChangePlaybackPositionAsync.
+                // This is because it is NOT related to this app and this function is tested to work on Spotify.
+                // TODO: Add a notice about this feature that some apps may not support this function.
+                MainWindow.logger.log((await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value)) ? "changed" : "failed to change");
         }
     }
 }

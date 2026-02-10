@@ -375,7 +375,7 @@ namespace WinIsland.IslandPages
                 // Do not accept bugs related to applications not changing their timeline with TryChangePlaybackPositionAsync.
                 // This is because it is NOT related to this app and this function is tested to work on Spotify.
                 // TODO: Add a notice about this feature that some apps may not support this function.
-                MainWindow.logger.log((await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value)) ? "changed" : "failed to change");
+                await mw.sessionManager.GetCurrentSession().TryChangePlaybackPositionAsync((long)songProgress.Value);
         }
     }
 }

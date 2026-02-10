@@ -527,7 +527,7 @@ namespace WinIsland
                 if (!GetWindowRect(hwnd, out windowRect))
                     return;
                 bool inRange = (mousePos.X >= windowRect.Left && mousePos.X <= windowRect.Right) &&
-                          (showing ? (mousePos.Y >= 0 && mousePos.Y <= 41) : (mousePos.Y >= 0 && mousePos.Y <= 1));
+                          (showing ? (mousePos.Y >= 0 && mousePos.Y <= ((41) + Screen.PrimaryScreen.WorkingArea.Top)) : (mousePos.Y >= 0 && mousePos.Y <= (1 + Screen.PrimaryScreen.WorkingArea.Top)));
                 mouseOver = inRange;
                 if (inRange && !isInTargetArea && !showing)
                 {
@@ -668,10 +668,10 @@ namespace WinIsland
                 double newHeight = startHeight + (targetHeight - startHeight) * easeT;
                 double newLeft = startLeft + (targetLeft - startLeft) * easeT;
 
-                SetWindowPos(hwnd, IntPtr.Zero, (int)Math.Round(newLeft), 0, (int)Math.Round(newWidth), (int)Math.Round(newHeight), SWP_NOZORDER | SWP_NOACTIVATE);
+                SetWindowPos(hwnd, IntPtr.Zero, (int)Math.Round(newLeft), Screen.PrimaryScreen.WorkingArea.Top, (int)Math.Round(newWidth), (int)Math.Round(newHeight), SWP_NOZORDER | SWP_NOACTIVATE);
                 await Task.Delay(delay);
             }
-            SetWindowPos(hwnd, IntPtr.Zero, targetLeft, 0, targetWidth, targetHeight, SWP_NOZORDER | SWP_NOACTIVATE);
+            SetWindowPos(hwnd, IntPtr.Zero, targetLeft, Screen.PrimaryScreen.WorkingArea.Top, targetWidth, targetHeight, SWP_NOZORDER | SWP_NOACTIVATE);
             if (isExpanded)
             {
                 settingsButton.BeginAnimation(Button.OpacityProperty, opacityShowAnim);

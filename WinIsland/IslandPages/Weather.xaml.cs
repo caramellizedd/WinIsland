@@ -132,6 +132,26 @@ namespace WinIsland.IslandPages
 			current current = JsonConvert.DeserializeObject<current>(node["current"].ToJsonString());
 			MainWindow.logger.log("Parsed succesfully!");
 
+            /**
+             *      Today Weather Data Info
+             **/
+
+            Dispatcher.Invoke(() =>
+            {
+                curWeatherIcon.Source = Helper.ConvertToImageSource(Helper.getImageFromUrl(icons[daily.weather_code[0]]["day"]["image"].ToString(), ImageFormat.Png));
+                curDay.Content = "Today";
+                curTempMax.Content = (int)daily.temperature_2m_max[0] + "° Max";
+                curTempMin.Content = (int)daily.temperature_2m_min[0] + "° Min";
+                string[] sunrise = daily.sunrise[0].Split("T");
+                string[] sunset = daily.sunset[0].Split("T");
+                curSunrise.Content = sunrise[1];
+                curSunset.Content = sunset[1];
+            });
+
+            /**
+             *      Weekly Weather Data Info
+             **/
+
             List<WeatherDataTile> weatherTiles = new List<WeatherDataTile>();
 
             for(int i = 0; i <= 6; i++)

@@ -19,6 +19,10 @@ namespace WinIsland
         public Bitmap thumbnail;
         public static Settings instance;
 
+        public long lastMaxTick = 0;
+        public long lastCurTick = 0;
+        public string lastDuration = "";
+
         public string lastArtist = "";
         public string lastSongName = "";
         public Bitmap lastThumbnail;

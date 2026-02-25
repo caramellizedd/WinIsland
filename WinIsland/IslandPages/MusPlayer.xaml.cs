@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,13 @@ namespace WinIsland.IslandPages
                 songTitle.Content = Settings.instance.lastSongName;
                 songArtist.Content = Settings.instance.lastArtist;
                 songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
+
+                sliderChangeIgnore = true;
+                songProgress.Maximum = Settings.instance.lastMaxTick;
+                songProgress.Value = Settings.instance.lastCurTick;
+                songProgressLabel.Content = Settings.instance.lastDuration;
+                sliderChangeIgnore = false; 
+
             }
             MainWindow.instance.busyRing.Visibility = Visibility.Visible;
             getMediaSession();
@@ -266,6 +274,11 @@ namespace WinIsland.IslandPages
                 songProgress.Maximum = sender.GetTimelineProperties().MaxSeekTime.Ticks;
                 songProgress.Value = sender.GetTimelineProperties().Position.Ticks;
                 songProgressLabel.Content = sender.GetTimelineProperties().Position.ToString(@"hh\:mm\:ss") + " / " + sender.GetTimelineProperties().MaxSeekTime.ToString(@"hh\:mm\:ss");
+                
+                Settings.instance.lastMaxTick = sender.GetTimelineProperties().MaxSeekTime.Ticks;
+                Settings.instance.lastCurTick = sender.GetTimelineProperties().Position.Ticks;
+                Settings.instance.lastDuration = sender.GetTimelineProperties().Position.ToString(@"hh\:mm\:ss") + " / " + sender.GetTimelineProperties().MaxSeekTime.ToString(@"hh\:mm\:ss");
+
                 sliderChangeIgnore = false;
             });
         }

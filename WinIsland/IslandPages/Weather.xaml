@@ -13,32 +13,49 @@
     <Grid Background="Transparent" Margin="0,35,0,0">
         <Image x:Name="test"/>
         <Label x:Name="waitLabel" Content="Loading weather information..." HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center"/>
-        <ListBox Background="Transparent" x:Name="WeatherListView" d:ItemsSource="{d:SampleData ItemCount=7}" HorizontalAlignment="Stretch" IsEnabled="False">
-            <ListBox.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
-                </ItemsPanelTemplate>
-            </ListBox.ItemsPanel>
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Grid>
-                        <StackPanel>
-                            <Image Width="64" Height="64" Source="{Binding image}" Margin="0,0,0,10">
-                                <Image.Effect>
-                                    <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.3" Color="Black"/>
-                                </Image.Effect>
-                            </Image>
-                            <Label Content="{Binding dayOfWeek}" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                            <StackPanel Orientation="Vertical" Margin="0,10,0,0" HorizontalAlignment="Stretch">
-                                <Label Content="{Binding tempmax}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                                <Label Content="{Binding tempmin}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                                <Label Content="{Binding sunrise}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
-                                <Label Content="{Binding sunset}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+        <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Orientation="Horizontal">
+            <StackPanel Margin="40,0,0,0" HorizontalAlignment="Left" Width="200">
+                <Image x:Name="curWeatherIcon" Width="128" Height="128" Source="{Binding image}" Margin="0,0,0,10">
+                    <Image.Effect>
+                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.3" Color="Black"/>
+                    </Image.Effect>
+                </Image>
+                <Label Name="curDay" Content="Today" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                <StackPanel Orientation="Vertical" Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                    <Label Name="curTempMax" Content="0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                    <Label Name="curTempMin" Content="0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                    <Label Name="curSunrise" Content="00:00" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                    <Label Name="curSunset" Content="00:00" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                </StackPanel>
+            </StackPanel>
+            <ListBox Background="Transparent" x:Name="WeatherListView" d:ItemsSource="{d:SampleData ItemCount=7}" HorizontalAlignment="Stretch" IsEnabled="False">
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <StackPanel>
+                                <Image Width="64" Height="64" Source="{Binding image}" Margin="0,0,0,10">
+                                    <Image.Effect>
+                                        <DropShadowEffect BlurRadius="10" ShadowDepth="0" Opacity="0.3" Color="Black"/>
+                                    </Image.Effect>
+                                </Image>
+                                <Label Content="{Binding dayOfWeek}" Margin="0,0,0,0" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                <StackPanel Orientation="Vertical" Margin="0,10,0,0" HorizontalAlignment="Stretch">
+                                    <Label Content="{Binding tempmax}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                    <Label Content="{Binding tempmin}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                    <Label Content="{Binding sunrise}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                    <Label Content="{Binding sunset}" HorizontalContentAlignment="Center" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
-                    </Grid>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+        </StackPanel>
+        
     </Grid>
 </Page>

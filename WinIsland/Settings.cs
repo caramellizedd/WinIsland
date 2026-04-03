@@ -29,7 +29,7 @@ namespace WinIsland
 
         public List<Weather.WeatherDataTile> lastWeatherTiles;
 
-        public SettingsConfig config;
+        public SettingsConfig? config;
 
         string path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\WI_config.cfg";
 
@@ -67,7 +67,11 @@ namespace WinIsland
                 ambientBGBlur = 40,
                 cornerRadius = 10,
                 clockHidden = true,
-                batteryHidden = true
+                batteryHidden = true,
+                lat = "-7.9797",
+                lon = "112.6308",
+                city = "Malang",
+                country = "Indonesia"
             };
             saveConfig();
         }
@@ -80,6 +84,10 @@ namespace WinIsland
             public float ambientBGBlur { get; set; }
 
             public int cornerRadius { get; set; }
+            public string lat { get; set; } = "";
+            public string lon { get; set; } = "";
+            public string city { get; set; } = "";
+            public string country { get; set; } = "";
         }
     }
 }

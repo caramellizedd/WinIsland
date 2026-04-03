@@ -63,9 +63,7 @@ namespace WinIsland.IslandPages
                     {
                         // The location are hardcoded for testing purposes (Malang, Indonesia)
                         // TODO: Make the user be able to select their own city/country.
-                        string lat = "-7.9797"; // Latitude
-						string lon = "112.6304"; // Longitude
-                        string url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon +
+                        string url = "https://api.open-meteo.com/v1/forecast?latitude=" + Settings.instance.config.lat + "&longitude=" + Settings.instance.config.lon +
                         "&daily=weather_code,temperature_2m_max,temperature_2m_min,uv_index_clear_sky_max,sunrise,sunset,apparent_temperature_min,apparent_temperature_max" +
                         "&current=temperature_2m,is_day,weather_code,apparent_temperature" +
                         "&timezone=auto";
@@ -133,7 +131,9 @@ namespace WinIsland.IslandPages
 			MainWindow.logger.log("Parsed succesfully!");
 
             /**
+             * ===================================
              *      Today Weather Data Info
+             * ===================================
              **/
 
             Dispatcher.Invoke(() =>
@@ -146,10 +146,13 @@ namespace WinIsland.IslandPages
                 string[] sunset = daily.sunset[0].Split("T");
                 curSunrise.Content = sunrise[1];
                 curSunset.Content = sunset[1];
+                cityName.Content = Settings.instance.config.city + ", " + Settings.instance.config.country;
             });
 
             /**
+             * ===================================
              *      Weekly Weather Data Info
+             * ===================================
              **/
 
             List<WeatherDataTile> weatherTiles = new List<WeatherDataTile>();
@@ -171,12 +174,12 @@ namespace WinIsland.IslandPages
                 });
 
                 temp.weatherCode = daily.weather_code[i];
-                temp.tempmax = (int)daily.temperature_2m_max[i] + "° Max";
-                temp.tempmin = (int)daily.temperature_2m_min[i] + "° Min";
-                string[] sunrise = daily.sunrise[i].Split("T");
-                string[] sunset = daily.sunset[i].Split("T");
-                temp.sunrise = sunrise[1];
-				temp.sunset = sunset[1];
+                temp.tmax = (int)daily.temperature_2m_max[i] + "°";
+                temp.tmin = (int)daily.temperature_2m_min[i] + "°";
+                //string[] sunrise = daily.sunrise[i].Split("T");
+                //string[] sunset = daily.sunset[i].Split("T");
+                //temp.sunrise = sunrise[1];
+				//temp.sunset = sunset[1];
                 weatherTiles.Add(temp);
             }
             Settings.instance.lastWeatherTiles = weatherTiles;
@@ -189,8 +192,8 @@ namespace WinIsland.IslandPages
             {
                 MainWindow.logger.log("Tile " + j + " has these data.");
                 MainWindow.logger.log("Weather Code: " + tile.weatherCode);
-                MainWindow.logger.log("Max Temp: " + tile.tempmax);
-				MainWindow.logger.log("Min Temp: " + tile.tempmin);
+                MainWindow.logger.log("Max Temp: " + tile.tmax);
+				MainWindow.logger.log("Min Temp: " + tile.tmin);
 				MainWindow.logger.log("Sunrise: " + tile.sunrise);
 				MainWindow.logger.log("Sunset: " + tile.sunset);
                 j++;
@@ -220,8 +223,8 @@ namespace WinIsland.IslandPages
             public string weatherCode { get; set; }
             public BitmapImage image { get; set;}
             public string dayOfWeek { get; set; }
-            public string tempmax { get; set; }
-			public string tempmin { get; set; }
+            public string tmax { get; set; }
+			public string tmin { get; set; }
             public string sunrise { get; set; }
             public string sunset { get; set; }
 		}

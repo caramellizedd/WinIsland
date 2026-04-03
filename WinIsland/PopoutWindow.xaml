@@ -211,6 +211,8 @@
                     <!--Tabs-->
                     <TabItem x:Name="main" Header="Main" Background="#00000000" Template="{StaticResource tabItemStyle}" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}">
                     </TabItem>
+                    <TabItem x:Name="weather" Header="Weather" Background="#00000000" Template="{StaticResource tabItemStyle}" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}">
+                    </TabItem>
                     <TabItem x:Name="advanced" Header="Advanced" Background="#00000000" Template="{StaticResource tabItemStyle}" Foreground="{DynamicResource {x:Static ui:ThemeKeys.DefaultTextForegroundThemeBrushKey}}">
                     </TabItem>
                 </TabControl>

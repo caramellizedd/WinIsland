@@ -221,6 +221,7 @@ namespace WinIsland
         {
             if(main.IsSelected) Navigate(new SettingsPage());
             if(advanced.IsSelected) Navigate(new AdvancedSettingsPage());
+            if(weather.IsSelected) Navigate(new WeatherPage());
         }
 
         private void Window_StateChanged(object sender, EventArgs e)

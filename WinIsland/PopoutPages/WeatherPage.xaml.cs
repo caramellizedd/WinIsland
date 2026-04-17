@@ -18,6 +18,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using WinIsland.IslandPages;
+using static System.Net.WebRequestMethods;
 using Page = System.Windows.Controls.Page;
 
 namespace WinIsland.PopoutPages
@@ -39,7 +41,8 @@ namespace WinIsland.PopoutPages
             {
                 try
                 {
-                    string url = "https://api.carameow.org/geolookup.php?city=" + locationTextBox.Text;
+                    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/147.0.0.0 Safari/537.36");
+                    string url = "https://nominatim.openstreetmap.org/search?q="+ locationTextBox.Text+"&format=jsonv2";
                     HttpResponseMessage response = await client.GetAsync(url);
                     MainWindow.logger.log("Getting location information from " + url);
                     string resp = await response.Content.ReadAsStringAsync();
@@ -58,18 +61,17 @@ namespace WinIsland.PopoutPages
                         if (!gotData)
                         {
                             string name = node["name"]?.ToString();
-                            string state = node["state"]?.ToString();
-                            string countryCode = node["country_code"]?.ToString();
-                            double lat = node["coordinates"]?["latitude"]?.Value<double>() ?? 0;
-                            double lon = node["coordinates"]?["longitude"]?.Value<double>() ?? 0;
+                            string displayName = node["display_name"]?.ToString();
+                            double lat = node["lat"]?.Value<double>() ?? 0;
+                            double lon = node["lon"]?.Value<double>() ?? 0;
 
 
                             //Console.WriteLine($"{name}, {state} ({countryCode}) - {lat}, {lon}");
-                            MainWindow.logger.log($"{name}, {state} ({countryCode}) - {lat}, {lon}");
+                            MainWindow.logger.log($"{name}, {displayName} - {lat}, {lon}");
                             ContentDialog dialog = new ContentDialog
                             {
                                 Title = "Confirm Location",
-                                Content = "Is the provided location correct?\n" + name + ", " + state + ", " + countryCode,
+                                Content = "Is the provided location correct?\n" + displayName,
                                 PrimaryButtonText = "Yea",
                                 SecondaryButtonText = "Nah",
                                 IsPrimaryButtonEnabled = true,
@@ -78,13 +80,16 @@ namespace WinIsland.PopoutPages
                             if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                             {
                                 Settings.instance.config.city = name.ToString();
-                                Settings.instance.config.country = countryCode.ToString();
+                                Settings.instance.config.weatherCityName = displayName.ToString();
                                 Settings.instance.config.lat = lat.ToString();
                                 Settings.instance.config.lon = lon.ToString();
                                 latLabel.Content = Settings.instance.config.lat;
                                 lonLabel.Content = Settings.instance.config.lon;
 
                                 gotData = true;
+
+                                if(MainWindow.instance.islandContent.Content is Weather)
+                                    MainWindow.instance.islandContent.Navigate(new Weather());
                             }
                         }
                     }

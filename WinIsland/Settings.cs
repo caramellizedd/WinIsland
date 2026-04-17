@@ -8,7 +8,9 @@ using System.Reflection;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using System.Windows.Media;
 using WinIsland.IslandPages;
+using static WinIsland.IslandPages.Weather;
 
 namespace WinIsland
 {
@@ -19,6 +21,7 @@ namespace WinIsland
         public Bitmap thumbnail;
         public static Settings instance;
 
+        // Song Data
         public long lastMaxTick = 0;
         public long lastCurTick = 0;
         public string lastDuration = "";
@@ -27,7 +30,14 @@ namespace WinIsland
         public string lastSongName = "";
         public Bitmap lastThumbnail;
 
+        // Weather Data
         public List<Weather.WeatherDataTile> lastWeatherTiles;
+        public ImageSource? lastWeatherIcon = null;
+        public string lastMaxTemp = "";
+        public string lastMinTemp = "";
+        public string lastSunrise = "";
+        public string lastSunset = "";
+        public string lastCityName = "";
 
         public SettingsConfig? config;
 
@@ -71,7 +81,7 @@ namespace WinIsland
                 lat = "-7.9797",
                 lon = "112.6308",
                 city = "Malang",
-                country = "Indonesia"
+                weatherCityName = "Indonesia"
             };
             saveConfig();
         }
@@ -87,7 +97,7 @@ namespace WinIsland
             public string lat { get; set; } = "";
             public string lon { get; set; } = "";
             public string city { get; set; } = "";
-            public string country { get; set; } = "";
+            public string weatherCityName { get; set; } = "";
         }
     }
 }

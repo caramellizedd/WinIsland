@@ -38,13 +38,21 @@ namespace WinIsland.IslandPages
                 waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;
                 waitLabel.Margin = new Thickness(0, 0, 0, 25);
                 waitLabel.Content = "Refreshing weather information...";
+                waitLabel.Visibility = Visibility.Hidden;
                 foreach(WeatherDataTile tile in Settings.instance.lastWeatherTiles)
                     WeatherListView.Items.Add(tile);
+                cityName.Content = Settings.instance.lastCityName;
+                curWeatherIcon.Source = Settings.instance.lastWeatherIcon;
+                curTempMax.Content = Settings.instance.lastMaxTemp;
+                curTempMin.Content = Settings.instance.lastMinTemp;
+                curSunrise.Content = Settings.instance.lastSunrise;
+                curSunset.Content = Settings.instance.lastSunset;
             }
             else
             {
                 waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Center;
                 waitLabel.Margin = new Thickness(0, 0, 0, 0);
+                waitLabel.Visibility = Visibility.Visible;
                 waitLabel.Content = "Loading weather information...";
             }
             fetchWeather();
@@ -146,7 +154,14 @@ namespace WinIsland.IslandPages
                 string[] sunset = daily.sunset[0].Split("T");
                 curSunrise.Content = sunrise[1];
                 curSunset.Content = sunset[1];
-                cityName.Content = Settings.instance.config.city + ", " + Settings.instance.config.country;
+                cityName.Content = Settings.instance.config.weatherCityName;
+
+                Settings.instance.lastCityName = (string)cityName.Content;
+                Settings.instance.lastWeatherIcon = curWeatherIcon.Source;
+                Settings.instance.lastMaxTemp = (string)curTempMax.Content;
+                Settings.instance.lastMinTemp = (string)curTempMin.Content;
+                Settings.instance.lastSunrise = (string)curSunrise.Content;
+                Settings.instance.lastSunset = (string)curSunset.Content;
             });
 
             /**

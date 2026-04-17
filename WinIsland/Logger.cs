@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -50,6 +51,25 @@ namespace WinIsland
                 catch (Exception ex)
                 {
 
+                }
+            }
+        }
+        public List<Stopwatch> counters = new List<Stopwatch>();
+        public Stopwatch startCounter()
+        {
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.Start();
+            counters.Add(stopwatch);
+            return stopwatch;
+        }
+        public void stopCounter(Stopwatch stopwatch, string name)
+        {
+            foreach(Stopwatch stp in counters)
+            {
+                if(stp == stopwatch)
+                {
+                    stp.Stop();
+                    log(name + " took " + stp.Elapsed);
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
@@ -82,6 +83,7 @@ namespace WinIsland
         }
         public static System.Windows.Media.Color CalculateAverageColor(Bitmap bm)
         {
+            Stopwatch calcDuration = MainWindow.logger.startCounter();
             if (bm == null) return System.Windows.Media.Color.FromRgb(0,0,0);
             MainWindow.logger.log("Getting average color...");
             int width = bm.Width;
@@ -143,6 +145,7 @@ namespace WinIsland
             MainWindow.logger.log("[CalculateAverageColor] Color succesfully calculated, unlocking...");
             bm.UnlockBits(srcData);
             MainWindow.logger.log("[CalculateAverageColor] Color Data: R:" + Convert.ToByte(avgR) + " G: " + Convert.ToByte(avgG) + " B: " + Convert.ToByte(avgB));
+            MainWindow.logger.stopCounter(calcDuration, "CalculateAverageColor");
             return System.Windows.Media.Color.FromRgb(Convert.ToByte(avgR), Convert.ToByte(avgG), Convert.ToByte(avgB));
         }
         public static Bitmap getImageFromUrl(string imageUrl, ImageFormat format)
@@ -159,6 +162,7 @@ namespace WinIsland
         }
         public static BitmapImage? GetThumbnail(IRandomAccessStreamReference Thumbnail, bool convertToPng = true)
         {
+            Stopwatch getThumbDuration = MainWindow.logger.startCounter();
             if (Thumbnail == null)
                 return null;
 
@@ -193,7 +197,7 @@ namespace WinIsland
                 image.StreamSource = ms;
                 image.EndInit();
             }
-
+            MainWindow.logger.stopCounter(getThumbDuration, "GetThumbnail");
             return image;
         }
         public static Bitmap? GetBitmap(IRandomAccessStreamReference Thumbnail)
@@ -218,6 +222,7 @@ namespace WinIsland
         
         public static BitmapImage ConvertToImageSource(Bitmap src)
         {
+            Stopwatch convertDuration = MainWindow.logger.startCounter();
             // Fix for crash on certain images.
             // Clone into a new 32bpp ARGB bitmap (safe for encoding)
             using (var safeBitmap = new Bitmap(src.Width, src.Height, PixelFormat.Format32bppArgb))
@@ -238,6 +243,7 @@ namespace WinIsland
                     bitmapImage.StreamSource = memory;
                     bitmapImage.EndInit();
                     bitmapImage.Freeze();
+                    MainWindow.logger.stopCounter(convertDuration, "ConvertToImageSource");
                     return bitmapImage;
                 }
             }

@@ -73,6 +73,7 @@ namespace WinIsland
         public MainWindow()
         {
             logger.log("Initializing island...");
+            Stopwatch initDuration = logger.startCounter();
             instance = this;
             InitializeComponent();
             logger.log("Main UI Component initialized.");
@@ -98,6 +99,7 @@ namespace WinIsland
             logger.log("Setting UI visibility.");
 
             logger.log("Main Island has been initialized.");
+            logger.stopCounter(initDuration, "MainWindow.Init");
         }
         Timer sysEventTimer = new Timer();
         private void setupEvents()
@@ -198,6 +200,7 @@ namespace WinIsland
         }
         public void renderGradient(Bitmap bmp)
         {
+            Stopwatch renderDuration = logger.startCounter();
             logger.log("Getting gradient...");
             Color color = Helper.CalculateAverageColor(bmp);
             if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
@@ -215,6 +218,7 @@ namespace WinIsland
             dropShadowEffect.Color = color;
             if (settings.thumbnail != null)
                 renderBackground(bmp);
+            logger.stopCounter(renderDuration, "renderGradient");
         }
         public void renderBackground(Bitmap bmp)
         {
@@ -229,11 +233,12 @@ namespace WinIsland
         BlurEffect be2 = new BlurEffect { Radius = 0, RenderingBias = RenderingBias.Performance };
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            Stopwatch initCounter = logger.startCounter();
             logger.log("Attempting to get focus.");
             Focus();
             tick = new DispatcherTimer();
             tick.Tick += Tick_Tick;
-            tick.Interval = new TimeSpan(0, 0, 0, 0, 100);
+            tick.Interval = new TimeSpan(0, 0, 0, 3, 0);
             tick.Start();
             firstPos = Left;
             //MakeWindowClickThrough(false);
@@ -285,6 +290,7 @@ namespace WinIsland
             Window_MouseLeave();
             Focus();
             islandLoaded = true;
+            logger.stopCounter(initCounter, "MainWindow.Loaded");
         }
 
         private async void Tick_Tick(object? sender, EventArgs e)
@@ -328,7 +334,6 @@ namespace WinIsland
                     }
                 }
             }
-
         }
         public String[] batteryIcon = ["\xE85A", "\xE85B", "\xE85C", "\xE85D", "\xE85E", "\xE85F", "\xE860", "\xE861", "\xE862", "\xE83E", "\xEA93"];
         public String[] batteryIconCharging = [""];
@@ -421,6 +426,7 @@ namespace WinIsland
         private void Window_MouseEnter()
         {
             if (!islandLoaded) return;
+            this.Visibility = Visibility.Visible;
             isInTargetArea = true;
             showing = true;
             //bg.Visibility = Visibility.Collapsed;
@@ -501,6 +507,7 @@ namespace WinIsland
             moveUpAnimation.Completed += (sender, e) =>
             {
                 isAnimating = false;
+                this.Visibility = Visibility.Hidden;
             };
 
             // Apply animation to the TranslateTransform
@@ -512,7 +519,7 @@ namespace WinIsland
         private void StartMouseTracking()
         {
             mouseCheckTimer = new DispatcherTimer();
-            mouseCheckTimer.Interval = TimeSpan.FromMilliseconds(100); // Check every 100ms
+            mouseCheckTimer.Interval = TimeSpan.FromMilliseconds(300); // Check every 100ms
             mouseCheckTimer.Tick += CheckMousePosition;
             mouseCheckTimer.Start();
         }
@@ -571,6 +578,7 @@ namespace WinIsland
         }
         private async void AnimateWindowSize(int width, int height, int left, bool easeoutback = true, double bounceRadius = 2)
         {
+            Stopwatch animDuration = MainWindow.logger.startCounter();
             isAnimating = true;
             double dpiScale = Helper.GetDpiScale(this);
             ThicknessAnimation ta;
@@ -681,6 +689,7 @@ namespace WinIsland
             islandMini.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
             gradientBG.BeginAnimation(Grid.OpacityProperty, opacityShowAnim);
             isAnimating = false;
+            MainWindow.logger.stopCounter(animDuration, "AnimateWindowSize");
         }
         
         private void Frame_Navigated(object sender, NavigationEventArgs e)
@@ -700,6 +709,7 @@ namespace WinIsland
 
         private async void playPauseAsync()
         {
+            Stopwatch ppDuration = logger.startCounter();
             try
             {
                 mediaProperties = await sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
@@ -713,6 +723,7 @@ namespace WinIsland
                 logger.log("NullReferenceException");
                 logger.log(nfe.StackTrace);
             }
+            logger.stopCounter(ppDuration, "PlayPause");
         }
         private void expandIsland()
         {

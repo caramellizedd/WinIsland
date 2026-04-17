@@ -19,6 +19,10 @@
             <Slider Minimum="0" Maximum="40" x:Name="corRadSlider" ValueChanged="corRadSlider_ValueChanged" MouseLeave="corRadSlider_MouseLeave"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideClockToggle" Content="- Hide the clock." Click="hideClockToggle_Click"/>
             <CheckBox Margin="3,10,0,0" x:Name="hideBatteryToggle" Content="- Hide the battery icon." Click="hideBatteryToggle_Click"/>
+            <StackPanel Margin="3,10,0,0" Orientation="Horizontal">
+				<RadioButton Content="Light Mode" x:Name="lightSelect" Click="lightSelect_Click"/>
+				<RadioButton Content="Dark Mode" x:Name="darkSelect" Click="darkSelect_Click"/>
+            </StackPanel>
         </StackPanel>
     </Grid>
 </Page>

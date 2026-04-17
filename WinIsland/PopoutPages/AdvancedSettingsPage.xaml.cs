@@ -1,4 +1,5 @@
-﻿using System;
+﻿using iNKORE.UI.WPF.Modern;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -32,6 +33,16 @@ namespace WinIsland.PopoutPages
             corRadLabel.Content = Settings.instance.config.cornerRadius + "px (Def: 10px)";
             hideBatteryToggle.IsChecked = Settings.instance.config.batteryHidden;
             hideClockToggle.IsChecked = Settings.instance.config.clockHidden;
+            if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Light) lightSelect.IsChecked = true;
+            else if(ThemeManager.Current.ApplicationTheme == ApplicationTheme.Dark) darkSelect.IsChecked = true;
+        }
+        private void lightSelect_Click(object sender, RoutedEventArgs e)
+        {
+            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Light;
+        }
+        private void darkSelect_Click(object sender, RoutedEventArgs e)
+        {
+            ThemeManager.Current.ApplicationTheme = ApplicationTheme.Dark;
         }
 
         private void corRadSlider_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)

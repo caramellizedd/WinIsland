@@ -2,7 +2,7 @@
 {
     public class StaticStrings
     {
-        public static String version = "0.3-PAR";
-        public static String longVersion = "Version 0.3-PublicAlphaRelease";
+        public static String version = "0.4A";
+        public static String longVersion = "Version 0.4-Alpha";
     }
 }

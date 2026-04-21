@@ -90,6 +90,7 @@ namespace WinIsland
             logger.log("Media Controls has been set to false.");
             settingsButton.IsEnabled = false;
             settingsButton.Opacity = 0;
+            settingsButton.Visibility = Visibility.Hidden;
             setupEvents();
             logger.log("Events initialized.");
             systemEventSmall.Visibility = Visibility.Hidden;
@@ -100,6 +101,7 @@ namespace WinIsland
 
             logger.log("Main Island has been initialized.");
             logger.stopCounter(initDuration, "MainWindow.Init");
+            // Next stage: Window_Loaded
         }
         Timer sysEventTimer = new Timer();
         private void setupEvents()
@@ -293,7 +295,7 @@ namespace WinIsland
             logger.stopCounter(initCounter, "MainWindow.Loaded");
         }
 
-        private async void Tick_Tick(object? sender, EventArgs e)
+        private void Tick_Tick(object? sender, EventArgs e)
         {
             clock.Content = DateTime.Now.ToString("hh:mm tt");
             PowerStatus p = SystemInformation.PowerStatus;
@@ -593,6 +595,7 @@ namespace WinIsland
                     EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
                 };
                 settingsButton.IsEnabled = true;
+                settingsButton.Visibility = Visibility.Visible;
             }
             else if (!isExpanded)
             {
@@ -604,6 +607,8 @@ namespace WinIsland
                     EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut }
                 };
                 settingsButton.IsEnabled = false;
+                settingsButton.Visibility = Visibility.Hidden;
+
             }
             else
             {

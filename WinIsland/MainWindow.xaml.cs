@@ -836,12 +836,14 @@ namespace WinIsland
         bool prevAnim = false;
         private void previousPageButton_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: Somehow make this not hardcoded?
             Navigate(islandContent.Content is MusPlayer ? new Weather() : new MusPlayer(), true);
             
         }
 
         private void nextPageButton_Click(object sender, RoutedEventArgs e)
         {
+            // TODO: Somehow make this not hardcoded?
             Navigate(islandContent.Content is Weather ? new MusPlayer() : new Weather(), false);
         }
         public void Navigate(object content, bool previous)

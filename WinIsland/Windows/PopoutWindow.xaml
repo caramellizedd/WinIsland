@@ -129,7 +129,6 @@
                 <Grid x:Name="titleBar" Height="32" VerticalAlignment="Top" Background="#00000000" MouseDown="titleBar_MouseDown">
                     <StackPanel FlowDirection="RightToLeft" Orientation="Horizontal">
                         <Button x:Name="closeButton" MouseLeave="closeButton_MouseLeave" MouseDown="closeButton_MouseDown" MouseEnter="closeButton_MouseEnter"  Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xE8bb;" FontFamily="../Fonts/#Segoe Fluent Icons" Click="closeButton_Click"/>
-                        
                         <Button x:Name="minimizeButton" Margin="0,0,0,00" VerticalAlignment="Center" Width="42" Height="32" Content="&#xe921;" FontFamily="../Fonts/#Segoe Fluent Icons" Click="minimizeButton_Click"/>
                     </StackPanel>
                 </Grid>
@@ -137,6 +136,7 @@
                     <Label x:Name="versionWatermark" Content="WinIsland version 0" />
                     <Label Content="This is an alpha release bugs are expected. Report them by making a new github issue." />
                     <Label Content="Close button on the tabs are a bug." />
+                    <Button Content="About this app" Width="128" Height="32" HorizontalAlignment="Left" Click="AboutButton_Click"/>
                 </StackPanel>
             </Grid>
         </Border>

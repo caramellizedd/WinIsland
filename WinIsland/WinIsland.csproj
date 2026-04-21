@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <None Remove="Assets\weather.json" />
+    <None Remove="Assets\wypher.jpg" />
     <None Remove="Fonts\sfi.ttf" />
   </ItemGroup>
 
@@ -35,6 +36,12 @@
     <Content Include="Fonts/sfi.ttf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\wypher.jpg">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

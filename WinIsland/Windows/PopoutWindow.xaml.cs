@@ -8,6 +8,7 @@ using System.Windows.Media.Effects;
 using iNKORE.UI.WPF.Modern.Controls.Helpers;
 using iNKORE.UI.WPF.Modern.Helpers.Styles;
 using WinIsland.PopoutPages;
+using WinIsland.Windows;
 using static WinIsland.PInvoke;
 using MessageBox = System.Windows.MessageBox;
 
@@ -238,6 +239,11 @@ namespace WinIsland
         private void Window_Deactivated(object sender, EventArgs e)
         {
             
+        }
+
+        private void AboutButton_Click(object sender, RoutedEventArgs e)
+        {
+            new AboutWindow().Show();
         }
     }
 }

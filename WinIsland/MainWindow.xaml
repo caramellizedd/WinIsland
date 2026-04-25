@@ -121,7 +121,7 @@
                     <Slider x:Name="volumeSlider" Maximum="1" VerticalAlignment="Center" Margin="34,0,30,0" Value="0.3"/>
                 </Grid>
                 <!--Main Content-->
-                <Grid x:Name="contentFrame">
+                <Grid x:Name="contentFrame" ClipToBounds="True">
                     <Frame x:Name="islandContent" MouseUp="Border_MouseUp" NavigationUIVisibility="Hidden" Navigated="islandContent_Navigated" Navigating="islandContent_Navigating">
                         <Frame.RenderTransform>
                             <TranslateTransform x:Name="frameAnimation"/>

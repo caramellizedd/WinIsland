@@ -118,7 +118,7 @@ namespace WinIsland.IslandPages
                     // Setup sessionManager events
                     // TODO: Set events for sessionManager
                     mediaSessionEmpty = false;
-                    getMusicInfo(mw.sessionManager.GetCurrentSession());
+                    getMusicInfo(mw.sessionManager.GetCurrentSession(), "startGetSessionThread | onTick");
                 });
                 waitForMD.Start();
                 return;
@@ -134,7 +134,7 @@ namespace WinIsland.IslandPages
                     mw.sessionManager.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
                 }
 
-                getMusicInfo(mw.sessionManager.GetCurrentSession());
+                getMusicInfo(mw.sessionManager.GetCurrentSession(), "startGetSessionThread | onTry");
             }
             catch (NullReferenceException nfe)
             {
@@ -216,7 +216,7 @@ namespace WinIsland.IslandPages
                 sender.GetCurrentSession().MediaPropertiesChanged += MainWindow_MediaPropertiesChanged;
                 sender.GetCurrentSession().TimelinePropertiesChanged += MainWindow_TimelinePropertiesChanged;
                 mediaSessionEmpty = false;
-                getMusicInfo(sender.GetCurrentSession());
+                getMusicInfo(sender.GetCurrentSession(), "SessionManager_CurrentSessionChanged");
             }
 
             try
@@ -249,7 +249,7 @@ namespace WinIsland.IslandPages
         {
             try
             {
-                getMusicInfo(sender.GetCurrentSession());
+                getMusicInfo(sender.GetCurrentSession(), "SessionManager_SessionChanged");
             }
             catch (NullReferenceException nfe)
             {
@@ -285,7 +285,7 @@ namespace WinIsland.IslandPages
         private async void MainWindow_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
             MainWindow.logger.log("MainWindow_MediaPropertiesChanged Event Called");
-            getMusicInfo(sender);
+            getMusicInfo(sender, "MainWindow_MediaPropertiesChanged");
         }
 
         private async void MainWindow_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
@@ -293,7 +293,7 @@ namespace WinIsland.IslandPages
             MainWindow.logger.log("MainWindow_PlaybackInfoChanged Event Called");
             try
             {
-                getMusicInfo(sender);
+                getMusicInfo(sender, "MainWindow_PlaybackInfoChanged");
             }
             catch
             {
@@ -307,7 +307,7 @@ namespace WinIsland.IslandPages
             }
 
         }
-        private async void getMusicInfo(GlobalSystemMediaTransportControlsSession sender)
+        private async void getMusicInfo(GlobalSystemMediaTransportControlsSession sender, string calledby = "noone")
         {
             Dispatcher.Invoke(() =>
             {
@@ -333,7 +333,7 @@ namespace WinIsland.IslandPages
                     Settings.instance.lastSongName = songInfo.Title;
                     if (Helper.GetBitmap(songInfo.Thumbnail) != null)
                     {
-                        mw.renderGradient(Settings.instance.thumbnail);
+                        mw.renderGradient(Settings.instance.thumbnail, "getMusicInfo | " + calledby);
                     }
 
                     toggleMediaControls(true);

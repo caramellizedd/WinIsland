@@ -200,10 +200,10 @@ namespace WinIsland
                     break;
             }
         }
-        public void renderGradient(Bitmap bmp)
+        public void renderGradient(Bitmap bmp, string calledby = "noone")
         {
             Stopwatch renderDuration = logger.startCounter();
-            logger.log("Getting gradient...");
+            logger.log("Getting gradient... [" + calledby + "]");
             Color color = Helper.CalculateAverageColor(bmp);
             if(ThemeManager.Current.ActualApplicationTheme == ApplicationTheme.Light)
             {

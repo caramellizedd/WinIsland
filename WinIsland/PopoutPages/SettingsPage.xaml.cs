@@ -100,7 +100,7 @@ namespace WinIsland.PopoutPages
         private void reloadBG_Click(object sender, RoutedEventArgs e)
         {
             if (settings.thumbnail != null)
-                MainWindow.instance.renderGradient(settings.thumbnail);
+                MainWindow.instance.renderGradient(settings.thumbnail, "reload manual");
         }
     }
 }

@@ -325,16 +325,18 @@ namespace WinIsland.IslandPages
                 this.Dispatcher.Invoke(() =>
                 {
                     songTitle.Content = songInfo.Title;
-                    songArtist.Content = songInfo.Artist;
+                    songArtist.Content = songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist;
                     songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
                     Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
                     Settings.instance.lastThumbnail = Helper.GetBitmap(songInfo.Thumbnail);
-                    Settings.instance.lastArtist = songInfo.Artist;
+                    Settings.instance.lastArtist = songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist;
                     Settings.instance.lastSongName = songInfo.Title;
                     if (Helper.GetBitmap(songInfo.Thumbnail) != null)
                     {
                         mw.renderGradient(Settings.instance.thumbnail, "getMusicInfo | " + calledby);
                     }
+                    MainWindow.logger.log("Now Playing: " + songInfo.Title);
+                    MainWindow.logger.log("Artist: " + (songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist));
 
                     toggleMediaControls(true);
                 });

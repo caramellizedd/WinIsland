@@ -81,8 +81,8 @@ namespace WinIsland.PopoutPages
                             {
                                 Settings.instance.config.city = name.ToString();
                                 Settings.instance.config.weatherCityName = displayName.ToString();
-                                Settings.instance.config.lat = lat.ToString();
-                                Settings.instance.config.lon = lon.ToString();
+                                Settings.instance.config.lat = lat.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                Settings.instance.config.lon = lon.ToString(System.Globalization.CultureInfo.InvariantCulture);
                                 latLabel.Content = Settings.instance.config.lat;
                                 lonLabel.Content = Settings.instance.config.lon;
 

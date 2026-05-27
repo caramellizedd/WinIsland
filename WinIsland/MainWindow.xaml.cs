@@ -4,6 +4,8 @@ using NAudio.Gui;
 using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.Drawing.Printing;
+using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,10 +17,11 @@ using System.Windows.Media.Effects;
 using System.Windows.Navigation;
 using System.Windows.Threading;
 using Windows.Media.Control;
+using WinIsland.IslandPages;
+using WinIsland.PluginSystem;
 using WinRT;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.TrackBar;
 using static WinIsland.PInvoke;
-using WinIsland.IslandPages;
 using Application = System.Windows.Application;
 using Button = System.Windows.Controls.Button;
 using Color = System.Windows.Media.Color;
@@ -70,6 +73,8 @@ namespace WinIsland
         public static MainWindow instance;
         public static Logger logger = new Logger();
 
+        PluginManager pluginManager = new PluginManager();
+
         public MainWindow()
         {
             logger.log("Initializing island...");
@@ -77,7 +82,9 @@ namespace WinIsland
             instance = this;
             InitializeComponent();
             logger.log("Main UI Component initialized.");
-            // Fixed volume changing to 30 every time the island starts up
+
+            // PluginInit.loadAll(pluginManager);
+
             volumeSlider.Value = (double)dev.AudioEndpointVolume.MasterVolumeLevelScalar;
             volumeSlider.ValueChanged += volumeSlider_ValueChanged;
             logger.log("Volume Slider Initialized.");
@@ -153,8 +160,10 @@ namespace WinIsland
         private void initPages()
         {
             // Load default pages
+            pluginManager.registerPage(new MusPlayer());
+            pluginManager.registerPage(new Weather());
+            PluginInit.loadAll(pluginManager);
             islandContent.Navigate(new MusPlayer());
-            //islandContent.Navigate(new Weather());
         }
         private void triggerSystemEvent(int id, double volume = 0)
         {
@@ -838,55 +847,20 @@ namespace WinIsland
         {
             
         }
-        bool prevAnim = false;
+        public bool prevAnim = false;
         private void previousPageButton_Click(object sender, RoutedEventArgs e)
         {
             // TODO: Somehow make this not hardcoded?
-            Navigate(islandContent.Content is MusPlayer ? new Weather() : new MusPlayer(), true);
-            
+            //Navigate(islandContent.Content is MusPlayer ? new Weather() : new MusPlayer(), true);
+            pluginManager.navigatePage(islandContent, true);
         }
 
         private void nextPageButton_Click(object sender, RoutedEventArgs e)
         {
-            // TODO: Somehow make this not hardcoded?
-            Navigate(islandContent.Content is Weather ? new MusPlayer() : new Weather(), false);
+            //Navigate(islandContent.Content is Weather ? new MusPlayer() : new Weather(), false);
+            pluginManager.navigatePage(islandContent, false);
         }
-        public void Navigate(object content, bool previous)
-        {
-            prevAnim = previous;
-            DoubleAnimation ta = new DoubleAnimation
-            {
-                From = 0,
-                To = previous ? -ActualWidth : ActualWidth,
-                Duration = new TimeSpan(0, 0, 0, 0, 250),
-                EasingFunction = new QuinticEase { EasingMode = EasingMode.EaseIn }
-            };
-
-            ta.Completed += (sender, e) =>
-            {
-                islandContent.Navigate(content);
-            };
-
-
-            if (Settings.instance.config.blurEverywhere)
-            {
-                DoubleAnimation blur = new DoubleAnimation
-                {
-                    From = 0,
-                    To = 20,
-                    Duration = new TimeSpan(0, 0, 0, 0, 300),
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
-                };
-                BlurEffect be = new BlurEffect();
-                be.RenderingBias = RenderingBias.Performance;
-                be.BeginAnimation(BlurEffect.RadiusProperty, blur);
-
-                islandContent.Effect = be;
-            }
-
-            frameAnimation.BeginAnimation(TranslateTransform.XProperty, ta);
-
-        }
+        
 
         private void islandContent_Navigated(object sender, NavigationEventArgs e)
         {

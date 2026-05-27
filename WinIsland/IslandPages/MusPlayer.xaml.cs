@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Threading;
 using Windows.Media.Control;
 using Windows.Media.Playback;
@@ -75,6 +77,18 @@ namespace WinIsland.IslandPages
                 }
             };
             Tick.Start();
+            DoubleAnimation animation = new DoubleAnimation
+            {
+                From = -10,
+                To = 10,
+                Duration = TimeSpan.FromSeconds(2),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut }
+            };
+
+            // 3. Begin the animation on the TranslateTransform's X property
+            floatAnim.BeginAnimation(TranslateTransform.YProperty, animation);
         }
         public void getMediaSession()
         {

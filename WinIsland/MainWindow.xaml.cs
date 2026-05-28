@@ -550,7 +550,6 @@ namespace WinIsland
                 if (inRange && !isInTargetArea && !showing)
                 {
                     isAnimating = true;
-                    Thread.Sleep(210);
                     //if (!inRange) return;
                     Window_MouseEnter();
                 }

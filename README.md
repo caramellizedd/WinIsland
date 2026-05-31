@@ -4,5 +4,3 @@ Dynamic Island is a feature in iOS in which the camera notch acts as part of the
 ## Features
 Currently, It can only let you control music players, see volume changes and see the thumbnail art.<br>
 I am expanding this so you could see other useful information like the Weather or total notifications.
-## Issues
-- Everything is in one .cs file :3c

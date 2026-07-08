@@ -33,6 +33,7 @@ namespace WinIsland.IslandPages
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            WeatherListView.Items.Clear();
             if (Settings.instance.lastWeatherTiles != null)
             {
                 waitLabel.VerticalAlignment = System.Windows.VerticalAlignment.Bottom;

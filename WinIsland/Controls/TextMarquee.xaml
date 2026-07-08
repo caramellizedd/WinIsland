@@ -1,0 +1,42 @@
+﻿<UserControl x:Class="WinIsland.Controls.TextMarquee"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WinIsland.Controls"
+             mc:Ignorable="d"
+             x:Name="Root"
+             Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+             d:DesignHeight="30" d:DesignWidth="300">
+    <!--
+        RootGrid clips its content and applies a fade-out mask on the
+        left/right edges, so any overflow is hidden gracefully instead
+        of being hard-cropped mid-letter.
+
+        Foreground defaults to iNKORE's theme-aware TextFillColorPrimaryBrush,
+        so it automatically follows Light/Dark/HighContrast theme changes.
+        Pass your own Foreground on individual instances to override it
+        (e.g. TextFillColorSecondaryBrush for a dimmer subtitle label).
+    -->
+    <Grid x:Name="RootGrid"
+          ClipToBounds="True"
+          SizeChanged="RootGrid_SizeChanged">
+        <!-- OpacityMask is applied/removed in code-behind: only shown when the text
+             actually overflows and needs to scroll. When it fits, no mask at all. -->
+
+        <!-- Canvas lets us freely translate the text left/right for the marquee -->
+        <Canvas x:Name="ScrollCanvas">
+            <TextBlock x:Name="PART_Text"
+                       Canvas.Left="0"
+                       Text="{Binding Text, ElementName=Root}"
+                       FontSize="{Binding FontSize, ElementName=Root}"
+                       FontWeight="{Binding FontWeight, ElementName=Root}"
+                       Foreground="{Binding Foreground, ElementName=Root}"
+                       SizeChanged="PART_Text_SizeChanged">
+                <TextBlock.RenderTransform>
+                    <TranslateTransform x:Name="TextTransform" X="0"/>
+                </TextBlock.RenderTransform>
+            </TextBlock>
+        </Canvas>
+    </Grid>
+</UserControl>

@@ -24,6 +24,7 @@ namespace WinIsland.IslandPages
     {
         private bool mediaSessionEmpty = true; // Check if mediaSession is empty or equal to NULL.
         private bool sliderChangeIgnore = false;
+        bool animatedCoverArt = false;
 
         private DispatcherTimer waitForMD = new DispatcherTimer();
         private DispatcherTimer Tick = new DispatcherTimer();
@@ -34,8 +35,8 @@ namespace WinIsland.IslandPages
             InitializeComponent();
             if(Settings.instance.lastThumbnail != null)
             {
-                songTitle.Content = Settings.instance.lastSongName;
-                songArtist.Content = Settings.instance.lastArtist;
+                songTitle.Text = Settings.instance.lastSongName;
+                songArtist.Text = Settings.instance.lastArtist;
                 songThumbnail.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
 
                 sliderChangeIgnore = true;
@@ -88,7 +89,7 @@ namespace WinIsland.IslandPages
             };
 
             // 3. Begin the animation on the TranslateTransform's X property
-            floatAnim.BeginAnimation(TranslateTransform.YProperty, animation);
+            if(animatedCoverArt) floatAnim.BeginAnimation(TranslateTransform.YProperty, animation);
         }
         public void getMediaSession()
         {
@@ -179,8 +180,8 @@ namespace WinIsland.IslandPages
                 await this.Dispatcher.Invoke(async () =>
                 {
                     //var songInfo = await mw.sessionManager.GetCurrentSession().TryGetMediaPropertiesAsync();
-                    //songTitle.Content = songInfo.Title;
-                    //songArtist.Content = songInfo.Artist;
+                    //songTitle.Text = songInfo.Title;
+                    //songArtist.Text = songInfo.Artist;
                     //songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
                     //if (Helper.GetBitmap(songInfo.Thumbnail) != null)
                     //    mw.renderGradient(Helper.GetBitmap(songInfo.Thumbnail));
@@ -245,8 +246,8 @@ namespace WinIsland.IslandPages
                 getMediaSession();
                 this.Dispatcher.Invoke(() =>
                 {
-                    songTitle.Content = "No media playing.";
-                    songArtist.Content = "WinIsland by Charamellized.";
+                    songTitle.Text = "No media playing.";
+                    songArtist.Text = "WinIsland by Charamellized.";
                     songThumbnail.Source = null;
                     toggleMediaControls(false);
                 });
@@ -313,8 +314,8 @@ namespace WinIsland.IslandPages
             {
                 this.Dispatcher.Invoke(() =>
                 {
-                    songTitle.Content = "No media playing.";
-                    songArtist.Content = "WinIsland by Charamellized.";
+                    songTitle.Text = "No media playing.";
+                    songArtist.Text = "WinIsland by Charamellized.";
                     songThumbnail.Source = null;
                     toggleMediaControls(false);
                 });
@@ -338,8 +339,8 @@ namespace WinIsland.IslandPages
                 MainWindow.logger.log("songInfo is NOT null, continuing...");
                 this.Dispatcher.Invoke(() =>
                 {
-                    songTitle.Content = songInfo.Title;
-                    songArtist.Content = songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist;
+                    songTitle.Text = songInfo.Title;
+                    songArtist.Text = songInfo.Artist.IsWhiteSpace() ? songInfo.AlbumArtist : songInfo.Artist;
                     songThumbnail.Source = Helper.GetThumbnail(songInfo.Thumbnail);
                     Settings.instance.thumbnail = Helper.GetBitmap(songInfo.Thumbnail);
                     Settings.instance.lastThumbnail = Helper.GetBitmap(songInfo.Thumbnail);

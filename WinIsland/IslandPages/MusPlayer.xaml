@@ -4,6 +4,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
       xmlns:ui="http://schemas.inkore.net/lib/ui/wpf/modern"
+      xmlns:controls="clr-namespace:WinIsland.Controls"
       xmlns:local="clr-namespace:WinIsland"
       mc:Ignorable="d" 
       d:DesignHeight="370" d:DesignWidth="872"
@@ -99,14 +100,14 @@
                         <VisualBrush Visual="{Binding ElementName=songThumbnail}" />
                     </Rectangle.Fill>
                 </Rectangle>
-                <Image x:Name="songThumbnail" Stretch="Uniform"/>
+                <Image x:Name="songThumbnail" Stretch="Uniform" Width="200" Height="200"/>
             </Grid>
-            <StackPanel Margin="45,89,0,0" Orientation="Vertical" VerticalAlignment="Stretch">
-                <Label x:Name="songTitle" Content="No song playing" FontSize="24" Width="450" FontFamily="Segoe UI" />
-                <Label x:Name="songArtist" Content="WinIsland by Charamellized" Width="450" Foreground="Gray" FontSize="16" FontFamily="Segoe UI"/>
+            <StackPanel Margin="30,65,0,0" Orientation="Vertical" VerticalAlignment="Stretch">
+                <controls:TextMarquee x:Name="songTitle" Text="No song playing" FontSize="24" Width="450" Height="32" FontFamily="Segoe UI" FontWeight="Bold" ScrollSpeed="35" PauseDuration="1.5"/>
+                <controls:TextMarquee x:Name="songArtist" Text="WinIsland by Charamellized" Width="450" Height="32" Foreground="Gray" FontSize="16" FontFamily="Segoe UI" ScrollSpeed="35" PauseDuration="1.5"/>
                 <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center" Margin="0,0,0,0" Orientation="Vertical">
                     <Slider x:Name="songProgress" ValueChanged="songProgress_ValueChanged" HorizontalAlignment="Stretch"/>
-                    <Label x:Name="songProgressLabel" Content="curVal/maxVal" HorizontalAlignment="Center"/>
+                    <Label x:Name="songProgressLabel" Content="curVal/maxVal" HorizontalAlignment="Center" FontFamily="Segoe UI" FontWeight="Light"/>
                 </StackPanel>
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,50,0,0" Orientation="Horizontal">
                     <Button x:Name="beforeRewind" Click="beforeRewind_Click" Content="&#xE100;" Height="50" Width="50" Margin="0,0,10,0" FontFamily="../Fonts/#Segoe Fluent Icons" FontSize="24" BorderThickness="0" FontWeight="Bold"/>

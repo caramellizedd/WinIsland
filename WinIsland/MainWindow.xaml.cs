@@ -91,7 +91,7 @@ namespace WinIsland
 
             StartMouseTracking();
             logger.log("Mouse Tracker Initialized.");
-            initPages();
+            initPagesAndPlugins();
             logger.log("Main Page Initialized (MusPlayer.xaml in source code)");
             toggleMediaControls(false);
             logger.log("Media Controls has been set to false.");
@@ -157,11 +157,12 @@ namespace WinIsland
                 renderGradient(settings.thumbnail);
             };
         }
-        private void initPages()
+        private void initPagesAndPlugins()
         {
             // Load default pages
             pluginManager.registerPage(new MusPlayer());
             pluginManager.registerPage(new Weather());
+            // Load plugins here for no reason at all :3
             PluginInit.loadAll(pluginManager);
             islandContent.Navigate(new MusPlayer());
         }

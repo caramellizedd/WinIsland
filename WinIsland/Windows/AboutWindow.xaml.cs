@@ -23,6 +23,14 @@ namespace WinIsland.Windows
         {
             InitializeComponent();
             versionLabel.Content = StaticStrings.longVersion;
+            try
+            {
+                backgroundImage.Source = Helper.ConvertToImageSource(Settings.instance.lastThumbnail);
+            }
+            catch (Exception ex)
+            {
+
+            }
         }
 
         private void closeButton_MouseEnter(object sender, System.Windows.Input.MouseEventArgs e)

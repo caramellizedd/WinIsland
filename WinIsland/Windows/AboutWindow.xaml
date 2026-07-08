@@ -12,7 +12,7 @@
         ResizeMode="NoResize"
         Title="AboutWindow" Height="423" Width="597">
     <Grid Background="Black">
-        <Image Source="/Assets/wypher.jpg" Stretch="Uniform" Opacity="0.4" ClipToBounds="False" Margin="-12" x:Name="backgroundImage">
+        <Image Source="/Assets/wypher.jpg" Stretch="UniformToFill" Opacity="0.4" ClipToBounds="False" Margin="-12" x:Name="backgroundImage">
             <Image.Effect>
                 <BlurEffect x:Name="blurEffect" Radius="24"/>
             </Image.Effect>

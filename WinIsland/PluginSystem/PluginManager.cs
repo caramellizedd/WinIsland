@@ -26,35 +26,15 @@ namespace WinIsland.PluginSystem
 
         public void navigatePage(Frame contentFrame, bool reverse)
         {
-            if (!reverse)
-            {
-                Navigate(islandPages.ToArray()[pageIndex], reverse, contentFrame);
-                pageIndex++;
-            }
-            else if(pageIndex == islandPages.Count && !reverse)
-            {
-                pageIndex = 0;
-                Navigate(islandPages.ToArray()[pageIndex], reverse, contentFrame);
-                pageIndex++;
-            }else if (reverse)
-            {
-                Console.WriteLine(pageIndex);
-                Navigate(islandPages.ToArray()[pageIndex], reverse, contentFrame);
-                pageIndex--;
-            }
-            else if (pageIndex == 0 && reverse)
-            {
-                pageIndex = islandPages.Count-1;
-                Navigate(islandPages.ToArray()[pageIndex], reverse, contentFrame);
-                pageIndex--;
-            }
-            if (pageIndex >= islandPages.Count)
-            {
-                pageIndex = 0;
-            }else if(pageIndex < 0)
-            {
-                pageIndex = islandPages.Count-1;
-            }
+            if (islandPages.Count == 0)
+                return;
+
+            int nextIndex = reverse
+                ? (pageIndex - 1 + islandPages.Count) % islandPages.Count
+                : (pageIndex + 1) % islandPages.Count;
+
+            Navigate(islandPages[nextIndex], reverse, contentFrame);
+            pageIndex = nextIndex;
         }
 
         public void Navigate(object content, bool previous, Frame islandContent)
